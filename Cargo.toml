@@ -1,0 +1,12 @@
+[package]
+name = "uri-prefix-mapping"
+version = "0.0.1"
+authors = ["Bruce Mitchener <bruce.mitchener@gmail.com>"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+description = ""
+keywords = ["curie", "qname", "prefix", "uri"]
+homepage = "https://github.com/endoli/uri-prefix-mapping.rs"
+repository = "https://github.com/endoli/uri-prefix-mapping.rs"
+
+[dependencies]
