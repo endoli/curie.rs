@@ -1,19 +1,19 @@
-# uri-prefix-mapping
+# curie
 
-[![Build Status](https://travis-ci.org/endoli/uri-prefix-mapping.rs.svg?branch=master)](https://travis-ci.org/endoli/uri-prefix-mapping.rs)
-[![](http://meritbadge.herokuapp.com/uri-prefix-mapping)](https://crates.io/crates/uri-prefix-mapping)
+[![Build Status](https://travis-ci.org/endoli/curie.rs.svg?branch=master)](https://travis-ci.org/endoli/curie.rs)
+[![](http://meritbadge.herokuapp.com/curie)](https://crates.io/crates/curie)
 
 Dual licensed under the MIT and Apache 2 licenses.
 
 ## Installation
 
 This crate works with Cargo and is on
-[crates.io](https://crates.io/crates/uri-prefix-mapping).
+[crates.io](https://crates.io/crates/curie).
 Add it to your `Cargo.toml` like so:
 
 ```toml
 [dependencies]
-uri-prefix-mapping = "0.0.1"
+curie = "0.0.1"
 ```
 
 ## Status of Implementation

@@ -4,8 +4,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! # URI Prefix Mapping
+//! # CURIE: Compact URIs
 //!
+//! CURIE, [defined by the W3C], are a compact way of representing a URI.
+//!
+//! [defined by the W3C]: https://www.w3.org/TR/curie/
 
 #![warn(missing_docs)]
 #![deny(trivial_numeric_casts,
