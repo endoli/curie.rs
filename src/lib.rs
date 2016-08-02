@@ -4,11 +4,44 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! # CURIE: Compact URIs
+//! # CURIEs: Compact URIs
 //!
-//! CURIE, [defined by the W3C], are a compact way of representing a URI.
+//! CURIEs, [defined by the W3C], are a compact way of representing a URI.
+//! A CURIE consists of an optional prefix and a reference, separated by
+//! a colon.
+//!
+//! Example CURIEs:
+//!
+//! * `"foaf:Person"` -- Results in a URI in the `foaf` namespace.
+//! * `":Person"` -- Results in a URI in the default namespace.
+//! * `"Person"` -- Results in a URI in the default namespace.
+//!
+//! The last two examples rely upon there being a default mapping providing
+//! a default base URI.
+//!
+//! See the [specification] for further details.
+//!
+//! ## Usage
+//!
+//! ```
+//! use curie::PrefixMapping;
+//!
+//! // Initialize a prefix mapper.
+//! let mut mapper = PrefixMapping::default();
+//! mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/");
+//!
+//! // Set a default prefix
+//! mapper.set_default("http://example.com/");
+//!
+//! // Expand a CURIE and get back the full URI.
+//! assert_eq!(mapper.expand("Entity"),
+//!            Ok(String::from("http://example.com/Entity")));
+//! assert_eq!(mapper.expand("foaf:Agent"),
+//!            Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
+//! ```
 //!
 //! [defined by the W3C]: https://www.w3.org/TR/curie/
+//! [specification]: https://www.w3.org/TR/curie/
 
 #![warn(missing_docs)]
 #![deny(trivial_numeric_casts,
@@ -17,34 +50,50 @@
 
 use std::collections::HashMap;
 
-#[allow(missing_docs)]
+/// Errors that might occur during CURIE expansion.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum PrefixMappingError {
+    /// The prefix on the CURIE has no valid mapping.
     Invalid,
+    /// The CURIE uses a default prefix, but one has not
+    /// been set.
     MissingDefault,
 }
 
-#[allow(missing_docs)]
+/// Maps prefixes to base URIs and allows for the expansion of
+/// CURIEs (Compact URIs).
 #[derive(Default)]
 pub struct PrefixMapping<'pm> {
     default: Option<&'pm str>,
     mapping: HashMap<&'pm str, &'pm str>,
 }
 
-#[allow(missing_docs)]
 impl<'pm> PrefixMapping<'pm> {
+    /// Set a default prefix.
+    ///
+    /// This is used during CURIE expansion when there is no
+    /// prefix, just a reference value.
     pub fn set_default(&mut self, default: &'pm str) {
         self.default = Some(default)
     }
 
+    /// Add a prefix to the mapping.
+    ///
+    /// This allows this prefix to be resolved when `expand` is
+    /// invoked on a CURIE.
     pub fn add_prefix(&mut self, prefix: &'pm str, value: &'pm str) {
         self.mapping.insert(prefix, value);
     }
 
+    /// Remove a prefix from the mapping.
+    ///
+    /// Future calls to `expand` that use this `prefix` will result
+    /// in a `PrefixMappingError::Invalid` error.
     pub fn remove_prefix(&mut self, prefix: &str) {
         self.mapping.remove(prefix);
     }
 
+    /// Expand a CURIE, returning a complete IRI.
     pub fn expand(&self, curie: &str) -> Result<String, PrefixMappingError> {
         if let Some(separator_idx) = curie.chars().position(|c| c == ':') {
             let prefix = &curie[..separator_idx];
