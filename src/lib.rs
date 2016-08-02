@@ -18,13 +18,25 @@
 use std::collections::HashMap;
 
 #[allow(missing_docs)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum PrefixMappingError {
+    Invalid,
+    MissingDefault,
+}
+
+#[allow(missing_docs)]
 #[derive(Default)]
 pub struct PrefixMapping<'pm> {
+    default: Option<&'pm str>,
     mapping: HashMap<&'pm str, &'pm str>,
 }
 
 #[allow(missing_docs)]
 impl<'pm> PrefixMapping<'pm> {
+    pub fn set_default(&mut self, default: &'pm str) {
+        self.default = Some(default)
+    }
+
     pub fn add_prefix(&mut self, prefix: &'pm str, value: &'pm str) {
         self.mapping.insert(prefix, value);
     }
@@ -40,17 +52,48 @@ impl<'pm> PrefixMapping<'pm> {
     pub fn get_prefix_for_value(&self, value: &str) -> Option<&&str> {
         self.mapping.iter().find(|&(_, v)| *v == value).map(|(k, _)| k)
     }
+
+    pub fn expand(&self, curie: &str) -> Result<String, PrefixMappingError> {
+        if let Some(separator_idx) = curie.chars().position(|c| c == ':') {
+            let prefix = &curie[..separator_idx];
+            let reference = &curie[separator_idx + 1..];
+
+            // If we have a separator, try to expand.
+            if separator_idx > 0 {
+                if let Some(mapped_prefix) = self.get_prefix_value(prefix) {
+                    Ok(String::from(*mapped_prefix) + reference)
+                } else {
+                    Err(PrefixMappingError::Invalid)
+                }
+            } else {
+                // Separator was first character, so look for default.
+                // No separator, so look for default.
+                if let Some(default) = self.default {
+                    Ok(String::from(default) + reference)
+                } else {
+                    Err(PrefixMappingError::MissingDefault)
+                }
+            }
+        } else {
+            // No separator, so look for default.
+            if let Some(default) = self.default {
+                Ok(String::from(default) + curie)
+            } else {
+                Err(PrefixMappingError::MissingDefault)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    const FOAF_VOCAB: &'static str = "http://xmlns.com/foaf/0.1/";
+
     #[test]
     fn add_remove_works() {
         let mut mapping = PrefixMapping::default();
-
-        const FOAF_VOCAB: &'static str = "http://xmlns.com/foaf/0.1/";
 
         // No keys should be found.
         assert_eq!(mapping.get_prefix_value("foaf"), None);
@@ -71,5 +114,39 @@ mod tests {
         // The "foaf" key should be found.
         assert_eq!(mapping.get_prefix_value("foaf"), None);
         assert_eq!(mapping.get_prefix_for_value("foaf"), None);
+    }
+
+    #[test]
+    fn expand() {
+        let mut mapping = PrefixMapping::default();
+
+        let curie = "foaf:Person";
+
+        // A CURIE with an unmapped prefix isn't expanded.
+        assert_eq!(mapping.expand(curie), Err(PrefixMappingError::Invalid));
+
+        // A CURIE without a separator doesn't cause problems. It still
+        // requires a default though.
+        assert_eq!(mapping.expand("Person"),
+                   Err(PrefixMappingError::MissingDefault));
+
+        mapping.set_default("http://example.com/");
+
+        assert_eq!(mapping.expand("Person"),
+                   Ok(String::from("http://example.com/Person")));
+
+        // Using a colon without a prefix results in using the default.
+        assert_eq!(mapping.expand(":Person"),
+                   Ok(String::from("http://example.com/Person")));
+
+        // And having a default won't allow a prefixed CURIE to
+        // be expanded with the default.
+        assert_eq!(mapping.expand(curie), Err(PrefixMappingError::Invalid));
+
+        mapping.add_prefix("foaf", FOAF_VOCAB);
+
+        // A CURIE with a mapped prefix is expanded correctly.
+        assert_eq!(mapping.expand(curie),
+                   Ok(String::from("http://xmlns.com/foaf/0.1/Person")));
     }
 }
