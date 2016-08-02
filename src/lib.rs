@@ -45,14 +45,6 @@ impl<'pm> PrefixMapping<'pm> {
         self.mapping.remove(prefix);
     }
 
-    pub fn get_prefix_value(&self, prefix: &str) -> Option<&&str> {
-        self.mapping.get(prefix)
-    }
-
-    pub fn get_prefix_for_value(&self, value: &str) -> Option<&&str> {
-        self.mapping.iter().find(|&(_, v)| *v == value).map(|(k, _)| k)
-    }
-
     pub fn expand(&self, curie: &str) -> Result<String, PrefixMappingError> {
         if let Some(separator_idx) = curie.chars().position(|c| c == ':') {
             let prefix = &curie[..separator_idx];
@@ -60,7 +52,7 @@ impl<'pm> PrefixMapping<'pm> {
 
             // If we have a separator, try to expand.
             if separator_idx > 0 {
-                if let Some(mapped_prefix) = self.get_prefix_value(prefix) {
+                if let Some(mapped_prefix) = self.mapping.get(prefix) {
                     Ok(String::from(*mapped_prefix) + reference)
                 } else {
                     Err(PrefixMappingError::Invalid)
@@ -93,27 +85,23 @@ mod tests {
 
     #[test]
     fn add_remove_works() {
-        let mut mapping = PrefixMapping::default();
+        let mut pm = PrefixMapping::default();
 
         // No keys should be found.
-        assert_eq!(mapping.get_prefix_value("foaf"), None);
-        assert_eq!(mapping.get_prefix_for_value("foaf"), None);
+        assert_eq!(pm.mapping.get("foaf"), None);
 
         // Add and look up a key.
-        mapping.add_prefix("foaf", FOAF_VOCAB);
-        assert_eq!(mapping.get_prefix_value("foaf"), Some(&FOAF_VOCAB));
-        assert_eq!(mapping.get_prefix_for_value(FOAF_VOCAB), Some(&"foaf"));
+        pm.add_prefix("foaf", FOAF_VOCAB);
+        assert_eq!(pm.mapping.get("foaf"), Some(&FOAF_VOCAB));
 
         // Unrelated keys still can not be found.
-        assert_eq!(mapping.get_prefix_value("rdfs"), None);
-        assert_eq!(mapping.get_prefix_for_value("rdfs"), None);
+        assert_eq!(pm.mapping.get("rdfs"), None);
 
         // Keys can be removed.
-        mapping.remove_prefix("foaf");
+        pm.remove_prefix("foaf");
 
-        // The "foaf" key should be found.
-        assert_eq!(mapping.get_prefix_value("foaf"), None);
-        assert_eq!(mapping.get_prefix_for_value("foaf"), None);
+        // The "foaf" key should not be found.
+        assert_eq!(pm.mapping.get("foaf"), None);
     }
 
     #[test]
