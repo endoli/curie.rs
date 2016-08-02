@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `curie` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, curie">
+
+    <title>curie - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'curie', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>curie</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/curie/src/lib.rs.html#7-189' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'>
+<h1 id='curies-compact-uris' class='section-header'><a href='#curies-compact-uris'>CURIEs: Compact URIs</a></h1>
+<p>CURIEs, <a href="https://www.w3.org/TR/curie/">defined by the W3C</a>, are a compact way of representing a URI.
+A CURIE consists of an optional prefix and a reference, separated by
+a colon.</p>
+
+<p>Example CURIEs:</p>
+
+<ul>
+<li><code>&quot;foaf:Person&quot;</code> -- Results in a URI in the <code>foaf</code> namespace.</li>
+<li><code>&quot;:Person&quot;</code> -- Results in a URI in the default namespace.</li>
+<li><code>&quot;Person&quot;</code> -- Results in a URI in the default namespace.</li>
+</ul>
+
+<p>The last two examples rely upon there being a default mapping providing
+a default base URI.</p>
+
+<p>See the <a href="https://www.w3.org/TR/curie/">specification</a> for further details.</p>
+
+<h2 id='usage' class='section-header'><a href='#usage'>Usage</a></h2>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>curie</span>::<span class='ident'>PrefixMapping</span>;
+
+<span class='comment'>// Initialize a prefix mapper.</span>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>mapper</span> <span class='op'>=</span> <span class='ident'>PrefixMapping</span>::<span class='ident'>default</span>();
+<span class='ident'>mapper</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='string'>&quot;http://xmlns.com/foaf/0.1/&quot;</span>);
+
+<span class='comment'>// Set a default prefix</span>
+<span class='ident'>mapper</span>.<span class='ident'>set_default</span>(<span class='string'>&quot;http://example.com/&quot;</span>);
+
+<span class='comment'>// Expand a CURIE and get back the full URI.</span>
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapper</span>.<span class='ident'>expand</span>(<span class='string'>&quot;Entity&quot;</span>),
+           <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;http://example.com/Entity&quot;</span>)));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapper</span>.<span class='ident'>expand</span>(<span class='string'>&quot;foaf:Agent&quot;</span>),
+           <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;http://xmlns.com/foaf/0.1/Agent&quot;</span>)));</pre>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.PrefixMapping.html'
+                                  title='curie::PrefixMapping'>PrefixMapping</a></td>
+                           <td class='docblock short'>
+                                <p>Maps prefixes to base URIs and allows for the expansion of
+CURIEs (Compact URIs).</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.PrefixMappingError.html'
+                                  title='curie::PrefixMappingError'>PrefixMappingError</a></td>
+                           <td class='docblock short'>
+                                <p>Errors that might occur during CURIE expansion.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "curie";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
