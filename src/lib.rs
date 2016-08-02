@@ -18,31 +18,58 @@
 use std::collections::HashMap;
 
 #[allow(missing_docs)]
+#[derive(Default)]
 pub struct PrefixMapping<'pm> {
     mapping: HashMap<&'pm str, &'pm str>,
 }
 
 #[allow(missing_docs)]
 impl<'pm> PrefixMapping<'pm> {
-    pub fn add_ns_prefix(&mut self, prefix: &'pm str, uri: &'pm str) {
-        self.mapping.insert(prefix, uri);
+    pub fn add_prefix(&mut self, prefix: &'pm str, value: &'pm str) {
+        self.mapping.insert(prefix, value);
     }
 
-    pub fn remove_ns_prefix(&mut self, prefix: &str) {
+    pub fn remove_prefix(&mut self, prefix: &str) {
         self.mapping.remove(prefix);
     }
 
-    pub fn get_ns_prefix_uri(&self, prefix: &str) -> Option<&&str> {
+    pub fn get_prefix_value(&self, prefix: &str) -> Option<&&str> {
         self.mapping.get(prefix)
     }
 
-    pub fn get_ns_uri_prefix(&self, _uri: &str) -> Option<&&str> {
-        None
+    pub fn get_prefix_for_value(&self, value: &str) -> Option<&&str> {
+        self.mapping.iter().find(|&(_, v)| *v == value).map(|(k, _)| k)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn it_works() {}
+    fn add_remove_works() {
+        let mut mapping = PrefixMapping::default();
+
+        const FOAF_VOCAB: &'static str = "http://xmlns.com/foaf/0.1/";
+
+        // No keys should be found.
+        assert_eq!(mapping.get_prefix_value("foaf"), None);
+        assert_eq!(mapping.get_prefix_for_value("foaf"), None);
+
+        // Add and look up a key.
+        mapping.add_prefix("foaf", FOAF_VOCAB);
+        assert_eq!(mapping.get_prefix_value("foaf"), Some(&FOAF_VOCAB));
+        assert_eq!(mapping.get_prefix_for_value(FOAF_VOCAB), Some(&"foaf"));
+
+        // Unrelated keys still can not be found.
+        assert_eq!(mapping.get_prefix_value("rdfs"), None);
+        assert_eq!(mapping.get_prefix_for_value("rdfs"), None);
+
+        // Keys can be removed.
+        mapping.remove_prefix("foaf");
+
+        // The "foaf" key should be found.
+        assert_eq!(mapping.get_prefix_value("foaf"), None);
+        assert_eq!(mapping.get_prefix_for_value("foaf"), None);
+    }
 }
