@@ -5,6 +5,11 @@
 
 Dual licensed under the MIT and Apache 2 licenses.
 
+## Documentation
+
+The API is fully documented with examples:
+[https://endoli.github.io/curie.rs/](https://endoli.github.io/curie.rs/)
+
 ## Installation
 
 This crate works with Cargo and is on
