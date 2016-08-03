@@ -239,6 +239,13 @@
 <span id="195">195</span>
 <span id="196">196</span>
 <span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
 </pre><pre class='rust '>
 <span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
 <span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
@@ -251,6 +258,9 @@
 <span class='doccomment'>//! CURIEs, [defined by the W3C], are a compact way of representing a URI.</span>
 <span class='doccomment'>//! A CURIE consists of an optional prefix and a reference, separated by</span>
 <span class='doccomment'>//! a colon.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! They are commonly used in JSON-LD, RDF, SPARQL, XML namespaces and other</span>
+<span class='doccomment'>//! applications.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Example CURIEs:</span>
 <span class='doccomment'>//!</span>
@@ -390,11 +400,15 @@
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='string'>&quot;foaf&quot;</span>), <span class='prelude-val'>None</span>);
 
         <span class='comment'>// Add and look up a key.</span>
-        <span class='ident'>pm</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='ident'>FOAF_VOCAB</span>).<span class='ident'>unwrap</span>();
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='ident'>FOAF_VOCAB</span>), <span class='prelude-val'>Ok</span>(()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='string'>&quot;foaf&quot;</span>), <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>FOAF_VOCAB</span>)));
 
         <span class='comment'>// Unrelated keys still can not be found.</span>
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='string'>&quot;rdfs&quot;</span>), <span class='prelude-val'>None</span>);
+
+        <span class='comment'>// Can&#39;t add _ as that&#39;s reserved.</span>
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;_&quot;</span>, <span class='string'>&quot;&quot;</span>),
+                   <span class='prelude-val'>Err</span>(<span class='ident'>InvalidPrefixError</span>::<span class='ident'>ReservedPrefix</span>));
 
         <span class='comment'>// Keys can be removed.</span>
         <span class='ident'>pm</span>.<span class='ident'>remove_prefix</span>(<span class='string'>&quot;foaf&quot;</span>);
