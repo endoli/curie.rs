@@ -10,6 +10,9 @@
 //! A CURIE consists of an optional prefix and a reference, separated by
 //! a colon.
 //!
+//! They are commonly used in JSON-LD, RDF, SPARQL, XML namespaces and other
+//! applications.
+//!
 //! Example CURIEs:
 //!
 //! * `"foaf:Person"` -- Results in a URI in the `foaf` namespace.
