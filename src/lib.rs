@@ -52,7 +52,7 @@ use std::collections::HashMap;
 
 /// Errors that might occur during CURIE expansion.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum PrefixMappingError {
+pub enum ExpansionError {
     /// The prefix on the CURIE has no valid mapping.
     Invalid,
     /// The CURIE uses a default prefix, but one has not
@@ -88,13 +88,13 @@ impl PrefixMapping {
     /// Remove a prefix from the mapping.
     ///
     /// Future calls to `expand` that use this `prefix` will result
-    /// in a `PrefixMappingError::Invalid` error.
+    /// in a `ExpansionError::Invalid` error.
     pub fn remove_prefix(&mut self, prefix: &str) {
         self.mapping.remove(prefix);
     }
 
     /// Expand a CURIE, returning a complete IRI.
-    pub fn expand(&self, curie: &str) -> Result<String, PrefixMappingError> {
+    pub fn expand(&self, curie: &str) -> Result<String, ExpansionError> {
         if let Some(separator_idx) = curie.chars().position(|c| c == ':') {
             let prefix = &curie[..separator_idx];
             let reference = &curie[separator_idx + 1..];
@@ -104,20 +104,20 @@ impl PrefixMapping {
                 if let Some(mapped_prefix) = self.mapping.get(prefix) {
                     Ok((*mapped_prefix).clone() + reference)
                 } else {
-                    Err(PrefixMappingError::Invalid)
+                    Err(ExpansionError::Invalid)
                 }
             } else if let Some(ref default) = self.default {
                 // Separator was first character, so look for default.
                 // No separator, so look for default.
                 Ok(default.clone() + reference)
             } else {
-                Err(PrefixMappingError::MissingDefault)
+                Err(ExpansionError::MissingDefault)
             }
         } else if let Some(ref default) = self.default {
             // No separator, so look for default.
             Ok(default.clone() + curie)
         } else {
-            Err(PrefixMappingError::MissingDefault)
+            Err(ExpansionError::MissingDefault)
         }
     }
 }
@@ -156,12 +156,12 @@ mod tests {
         let curie = "foaf:Person";
 
         // A CURIE with an unmapped prefix isn't expanded.
-        assert_eq!(mapping.expand(curie), Err(PrefixMappingError::Invalid));
+        assert_eq!(mapping.expand(curie), Err(ExpansionError::Invalid));
 
         // A CURIE without a separator doesn't cause problems. It still
         // requires a default though.
         assert_eq!(mapping.expand("Person"),
-                   Err(PrefixMappingError::MissingDefault));
+                   Err(ExpansionError::MissingDefault));
 
         mapping.set_default("http://example.com/");
 
@@ -174,7 +174,7 @@ mod tests {
 
         // And having a default won't allow a prefixed CURIE to
         // be expanded with the default.
-        assert_eq!(mapping.expand(curie), Err(PrefixMappingError::Invalid));
+        assert_eq!(mapping.expand(curie), Err(ExpansionError::Invalid));
 
         mapping.add_prefix("foaf", FOAF_VOCAB);
 
