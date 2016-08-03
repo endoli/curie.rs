@@ -28,7 +28,7 @@
 //!
 //! // Initialize a prefix mapper.
 //! let mut mapper = PrefixMapping::default();
-//! mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/");
+//! mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/").unwrap();
 //!
 //! // Set a default prefix
 //! mapper.set_default("http://example.com/");
@@ -49,6 +49,13 @@
         unused_import_braces, unused_qualifications)]
 
 use std::collections::HashMap;
+
+/// Errors that might occur when adding a prefix to a `PrefixMapping`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum InvalidPrefixError {
+    /// This is a reserved prefix.
+    ReservedPrefix,
+}
 
 /// Errors that might occur during CURIE expansion.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -81,8 +88,13 @@ impl PrefixMapping {
     ///
     /// This allows this prefix to be resolved when `expand` is
     /// invoked on a CURIE.
-    pub fn add_prefix(&mut self, prefix: &str, value: &str) {
-        self.mapping.insert(String::from(prefix), String::from(value));
+    pub fn add_prefix(&mut self, prefix: &str, value: &str) -> Result<(), InvalidPrefixError> {
+        if prefix == "_" {
+            Err(InvalidPrefixError::ReservedPrefix)
+        } else {
+            self.mapping.insert(String::from(prefix), String::from(value));
+            Ok(())
+        }
     }
 
     /// Remove a prefix from the mapping.
@@ -136,7 +148,7 @@ mod tests {
         assert_eq!(pm.mapping.get("foaf"), None);
 
         // Add and look up a key.
-        pm.add_prefix("foaf", FOAF_VOCAB);
+        pm.add_prefix("foaf", FOAF_VOCAB).unwrap();
         assert_eq!(pm.mapping.get("foaf"), Some(&String::from(FOAF_VOCAB)));
 
         // Unrelated keys still can not be found.
@@ -176,7 +188,7 @@ mod tests {
         // be expanded with the default.
         assert_eq!(mapping.expand(curie), Err(ExpansionError::Invalid));
 
-        mapping.add_prefix("foaf", FOAF_VOCAB);
+        mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
 
         // A CURIE with a mapped prefix is expanded correctly.
         assert_eq!(mapping.expand(curie),
