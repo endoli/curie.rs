@@ -47,7 +47,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-0' class='srclink' href='../src/curie/src/lib.rs.html#7-240' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-0' class='srclink' href='../src/curie/src/lib.rs.html#7-238' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id='curies-compact-uris' class='section-header'><a href='#curies-compact-uris'>CURIEs: Compact URIs</a></h1>
 <p>CURIEs, <a href="https://www.w3.org/TR/curie/">defined by the W3C</a>, are a compact way of representing a URI.
@@ -60,13 +60,16 @@ applications.</p>
 <p>Example CURIEs:</p>
 
 <ul>
-<li><code>&quot;foaf:Person&quot;</code> -- Results in a URI in the <code>foaf</code> namespace.</li>
-<li><code>&quot;:Person&quot;</code> -- Results in a URI in the default namespace.</li>
+<li><code>&quot;foaf:Person&quot;</code> -- Results in a URI in the namespace represented by
+the <code>&quot;foaf&quot;</code> prefix.</li>
+<li><code>&quot;:Person&quot;</code> -- Results in a URI in the namespace represented by
+the <code>&quot;&quot;</code> prefix.</li>
 <li><code>&quot;Person&quot;</code> -- Results in a URI in the default namespace.</li>
 </ul>
 
-<p>The last two examples rely upon there being a default mapping providing
-a default base URI.</p>
+<p>The last example relies upon there being a default mapping providing
+a default base URI, while the example before it relies upon there
+being a prefix which is an empty string.</p>
 
 <p>See the <a href="https://www.w3.org/TR/curie/">specification</a> for further details.</p>
 

@@ -280,8 +280,6 @@
 <span id="236">236</span>
 <span id="237">237</span>
 <span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
 </pre><pre class='rust '>
 <span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
 <span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
@@ -300,12 +298,15 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Example CURIEs:</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! * `&quot;foaf:Person&quot;` -- Results in a URI in the `foaf` namespace.</span>
-<span class='doccomment'>//! * `&quot;:Person&quot;` -- Results in a URI in the default namespace.</span>
+<span class='doccomment'>//! * `&quot;foaf:Person&quot;` -- Results in a URI in the namespace represented by</span>
+<span class='doccomment'>//!   the `&quot;foaf&quot;` prefix.</span>
+<span class='doccomment'>//! * `&quot;:Person&quot;` -- Results in a URI in the namespace represented by</span>
+<span class='doccomment'>//!   the `&quot;&quot;` prefix.</span>
 <span class='doccomment'>//! * `&quot;Person&quot;` -- Results in a URI in the default namespace.</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! The last two examples rely upon there being a default mapping providing</span>
-<span class='doccomment'>//! a default base URI.</span>
+<span class='doccomment'>//! The last example relies upon there being a default mapping providing</span>
+<span class='doccomment'>//! a default base URI, while the example before it relies upon there</span>
+<span class='doccomment'>//! being a prefix which is an empty string.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! See the [specification] for further details.</span>
 <span class='doccomment'>//!</span>
@@ -436,18 +437,10 @@
             <span class='kw'>let</span> <span class='ident'>reference</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>curie</span>[<span class='ident'>separator_idx</span> <span class='op'>+</span> <span class='number'>1</span>..];
 
             <span class='comment'>// If we have a separator, try to expand.</span>
-            <span class='kw'>if</span> <span class='ident'>separator_idx</span> <span class='op'>&gt;</span> <span class='number'>0</span> {
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>mapped_prefix</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='ident'>prefix</span>) {
-                    <span class='prelude-val'>Ok</span>((<span class='op'>*</span><span class='ident'>mapped_prefix</span>).<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>reference</span>)
-                } <span class='kw'>else</span> {
-                    <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>Invalid</span>)
-                }
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>default</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>default</span> {
-                <span class='comment'>// Separator was first character, so look for default.</span>
-                <span class='comment'>// No separator, so look for default.</span>
-                <span class='prelude-val'>Ok</span>(<span class='ident'>default</span>.<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>reference</span>)
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>mapped_prefix</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='ident'>prefix</span>) {
+                <span class='prelude-val'>Ok</span>((<span class='op'>*</span><span class='ident'>mapped_prefix</span>).<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>reference</span>)
             } <span class='kw'>else</span> {
-                <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>MissingDefault</span>)
+                <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>Invalid</span>)
             }
         } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>default</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>default</span> {
             <span class='comment'>// No separator, so look for default.</span>
@@ -508,9 +501,12 @@
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='string'>&quot;Person&quot;</span>),
                    <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;http://example.com/Person&quot;</span>)));
 
-        <span class='comment'>// Using a colon without a prefix results in using the default.</span>
+        <span class='comment'>// Using a colon without a prefix results in using a prefix</span>
+        <span class='comment'>// for an empty string.</span>
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='string'>&quot;:Person&quot;</span>), <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>Invalid</span>));
+        <span class='ident'>mapping</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;&quot;</span>, <span class='string'>&quot;http://example.com/ExampleDocument#&quot;</span>).<span class='ident'>unwrap</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='string'>&quot;:Person&quot;</span>),
-                   <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;http://example.com/Person&quot;</span>)));
+                   <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;http://example.com/ExampleDocument#Person&quot;</span>)));
 
         <span class='comment'>// And having a default won&#39;t allow a prefixed CURIE to</span>
         <span class='comment'>// be expanded with the default.</span>
