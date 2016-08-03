@@ -231,6 +231,14 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
 </pre><pre class='rust '>
 <span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
 <span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
@@ -262,7 +270,7 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! // Initialize a prefix mapper.</span>
 <span class='doccomment'>//! let mut mapper = PrefixMapping::default();</span>
-<span class='doccomment'>//! mapper.add_prefix(&quot;foaf&quot;, &quot;http://xmlns.com/foaf/0.1/&quot;);</span>
+<span class='doccomment'>//! mapper.add_prefix(&quot;foaf&quot;, &quot;http://xmlns.com/foaf/0.1/&quot;).unwrap();</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! // Set a default prefix</span>
 <span class='doccomment'>//! mapper.set_default(&quot;http://example.com/&quot;);</span>
@@ -284,9 +292,16 @@
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
 
+<span class='doccomment'>/// Errors that might occur when adding a prefix to a `PrefixMapping`.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>Debug</span>, <span class='ident'>PartialEq</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>InvalidPrefixError</span> {
+    <span class='doccomment'>/// This is a reserved prefix.</span>
+    <span class='ident'>ReservedPrefix</span>,
+}
+
 <span class='doccomment'>/// Errors that might occur during CURIE expansion.</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>Debug</span>, <span class='ident'>PartialEq</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>PrefixMappingError</span> {
+<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>ExpansionError</span> {
     <span class='doccomment'>/// The prefix on the CURIE has no valid mapping.</span>
     <span class='ident'>Invalid</span>,
     <span class='doccomment'>/// The CURIE uses a default prefix, but one has not</span>
@@ -297,38 +312,43 @@
 <span class='doccomment'>/// Maps prefixes to base URIs and allows for the expansion of</span>
 <span class='doccomment'>/// CURIEs (Compact URIs).</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Default</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PrefixMapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;pm</span><span class='op'>&gt;</span> {
-    <span class='ident'>default</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;pm</span> <span class='ident'>str</span><span class='op'>&gt;</span>,
-    <span class='ident'>mapping</span>: <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;pm</span> <span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;pm</span> <span class='ident'>str</span><span class='op'>&gt;</span>,
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PrefixMapping</span> {
+    <span class='ident'>default</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>,
+    <span class='ident'>mapping</span>: <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='ident'>String</span>, <span class='ident'>String</span><span class='op'>&gt;</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;pm</span><span class='op'>&gt;</span> <span class='ident'>PrefixMapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;pm</span><span class='op'>&gt;</span> {
+<span class='kw'>impl</span> <span class='ident'>PrefixMapping</span> {
     <span class='doccomment'>/// Set a default prefix.</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// This is used during CURIE expansion when there is no</span>
     <span class='doccomment'>/// prefix, just a reference value.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>set_default</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>default</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;pm</span> <span class='ident'>str</span>) {
-        <span class='self'>self</span>.<span class='ident'>default</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>default</span>)
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>set_default</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>default</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) {
+        <span class='self'>self</span>.<span class='ident'>default</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>default</span>));
     }
 
     <span class='doccomment'>/// Add a prefix to the mapping.</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// This allows this prefix to be resolved when `expand` is</span>
     <span class='doccomment'>/// invoked on a CURIE.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>add_prefix</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>prefix</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;pm</span> <span class='ident'>str</span>, <span class='ident'>value</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;pm</span> <span class='ident'>str</span>) {
-        <span class='self'>self</span>.<span class='ident'>mapping</span>.<span class='ident'>insert</span>(<span class='ident'>prefix</span>, <span class='ident'>value</span>);
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>add_prefix</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>prefix</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>value</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InvalidPrefixError</span><span class='op'>&gt;</span> {
+        <span class='kw'>if</span> <span class='ident'>prefix</span> <span class='op'>==</span> <span class='string'>&quot;_&quot;</span> {
+            <span class='prelude-val'>Err</span>(<span class='ident'>InvalidPrefixError</span>::<span class='ident'>ReservedPrefix</span>)
+        } <span class='kw'>else</span> {
+            <span class='self'>self</span>.<span class='ident'>mapping</span>.<span class='ident'>insert</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>prefix</span>), <span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>value</span>));
+            <span class='prelude-val'>Ok</span>(())
+        }
     }
 
     <span class='doccomment'>/// Remove a prefix from the mapping.</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// Future calls to `expand` that use this `prefix` will result</span>
-    <span class='doccomment'>/// in a `PrefixMappingError::Invalid` error.</span>
+    <span class='doccomment'>/// in a `ExpansionError::Invalid` error.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>remove_prefix</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>prefix</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) {
         <span class='self'>self</span>.<span class='ident'>mapping</span>.<span class='ident'>remove</span>(<span class='ident'>prefix</span>);
     }
 
     <span class='doccomment'>/// Expand a CURIE, returning a complete IRI.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>expand</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>curie</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>String</span>, <span class='ident'>PrefixMappingError</span><span class='op'>&gt;</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>expand</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>curie</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>String</span>, <span class='ident'>ExpansionError</span><span class='op'>&gt;</span> {
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>separator_idx</span>) <span class='op'>=</span> <span class='ident'>curie</span>.<span class='ident'>chars</span>().<span class='ident'>position</span>(<span class='op'>|</span><span class='ident'>c</span><span class='op'>|</span> <span class='ident'>c</span> <span class='op'>==</span> <span class='string'>&#39;:&#39;</span>) {
             <span class='kw'>let</span> <span class='ident'>prefix</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>curie</span>[..<span class='ident'>separator_idx</span>];
             <span class='kw'>let</span> <span class='ident'>reference</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>curie</span>[<span class='ident'>separator_idx</span> <span class='op'>+</span> <span class='number'>1</span>..];
@@ -336,26 +356,22 @@
             <span class='comment'>// If we have a separator, try to expand.</span>
             <span class='kw'>if</span> <span class='ident'>separator_idx</span> <span class='op'>&gt;</span> <span class='number'>0</span> {
                 <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>mapped_prefix</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='ident'>prefix</span>) {
-                    <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='op'>*</span><span class='ident'>mapped_prefix</span>) <span class='op'>+</span> <span class='ident'>reference</span>)
+                    <span class='prelude-val'>Ok</span>((<span class='op'>*</span><span class='ident'>mapped_prefix</span>).<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>reference</span>)
                 } <span class='kw'>else</span> {
-                    <span class='prelude-val'>Err</span>(<span class='ident'>PrefixMappingError</span>::<span class='ident'>Invalid</span>)
+                    <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>Invalid</span>)
                 }
-            } <span class='kw'>else</span> {
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>default</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>default</span> {
                 <span class='comment'>// Separator was first character, so look for default.</span>
                 <span class='comment'>// No separator, so look for default.</span>
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>default</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>default</span> {
-                    <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>default</span>) <span class='op'>+</span> <span class='ident'>reference</span>)
-                } <span class='kw'>else</span> {
-                    <span class='prelude-val'>Err</span>(<span class='ident'>PrefixMappingError</span>::<span class='ident'>MissingDefault</span>)
-                }
-            }
-        } <span class='kw'>else</span> {
-            <span class='comment'>// No separator, so look for default.</span>
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>default</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>default</span> {
-                <span class='prelude-val'>Ok</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>default</span>) <span class='op'>+</span> <span class='ident'>curie</span>)
+                <span class='prelude-val'>Ok</span>(<span class='ident'>default</span>.<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>reference</span>)
             } <span class='kw'>else</span> {
-                <span class='prelude-val'>Err</span>(<span class='ident'>PrefixMappingError</span>::<span class='ident'>MissingDefault</span>)
+                <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>MissingDefault</span>)
             }
+        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>default</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>default</span> {
+            <span class='comment'>// No separator, so look for default.</span>
+            <span class='prelude-val'>Ok</span>(<span class='ident'>default</span>.<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>curie</span>)
+        } <span class='kw'>else</span> {
+            <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>MissingDefault</span>)
         }
     }
 }
@@ -374,8 +390,8 @@
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='string'>&quot;foaf&quot;</span>), <span class='prelude-val'>None</span>);
 
         <span class='comment'>// Add and look up a key.</span>
-        <span class='ident'>pm</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='ident'>FOAF_VOCAB</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='string'>&quot;foaf&quot;</span>), <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>FOAF_VOCAB</span>));
+        <span class='ident'>pm</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='ident'>FOAF_VOCAB</span>).<span class='ident'>unwrap</span>();
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='string'>&quot;foaf&quot;</span>), <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>FOAF_VOCAB</span>)));
 
         <span class='comment'>// Unrelated keys still can not be found.</span>
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>pm</span>.<span class='ident'>mapping</span>.<span class='ident'>get</span>(<span class='string'>&quot;rdfs&quot;</span>), <span class='prelude-val'>None</span>);
@@ -394,12 +410,12 @@
         <span class='kw'>let</span> <span class='ident'>curie</span> <span class='op'>=</span> <span class='string'>&quot;foaf:Person&quot;</span>;
 
         <span class='comment'>// A CURIE with an unmapped prefix isn&#39;t expanded.</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='ident'>curie</span>), <span class='prelude-val'>Err</span>(<span class='ident'>PrefixMappingError</span>::<span class='ident'>Invalid</span>));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='ident'>curie</span>), <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>Invalid</span>));
 
         <span class='comment'>// A CURIE without a separator doesn&#39;t cause problems. It still</span>
         <span class='comment'>// requires a default though.</span>
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='string'>&quot;Person&quot;</span>),
-                   <span class='prelude-val'>Err</span>(<span class='ident'>PrefixMappingError</span>::<span class='ident'>MissingDefault</span>));
+                   <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>MissingDefault</span>));
 
         <span class='ident'>mapping</span>.<span class='ident'>set_default</span>(<span class='string'>&quot;http://example.com/&quot;</span>);
 
@@ -412,9 +428,9 @@
 
         <span class='comment'>// And having a default won&#39;t allow a prefixed CURIE to</span>
         <span class='comment'>// be expanded with the default.</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='ident'>curie</span>), <span class='prelude-val'>Err</span>(<span class='ident'>PrefixMappingError</span>::<span class='ident'>Invalid</span>));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='ident'>curie</span>), <span class='prelude-val'>Err</span>(<span class='ident'>ExpansionError</span>::<span class='ident'>Invalid</span>));
 
-        <span class='ident'>mapping</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='ident'>FOAF_VOCAB</span>);
+        <span class='ident'>mapping</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='ident'>FOAF_VOCAB</span>).<span class='ident'>unwrap</span>();
 
         <span class='comment'>// A CURIE with a mapped prefix is expanded correctly.</span>
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>mapping</span>.<span class='ident'>expand</span>(<span class='ident'>curie</span>),

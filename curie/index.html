@@ -47,7 +47,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-0' class='srclink' href='../src/curie/src/lib.rs.html#7-189' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-0' class='srclink' href='../src/curie/src/lib.rs.html#7-197' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id='curies-compact-uris' class='section-header'><a href='#curies-compact-uris'>CURIEs: Compact URIs</a></h1>
 <p>CURIEs, <a href="https://www.w3.org/TR/curie/">defined by the W3C</a>, are a compact way of representing a URI.
@@ -73,7 +73,7 @@ a default base URI.</p>
 
 <span class='comment'>// Initialize a prefix mapper.</span>
 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>mapper</span> <span class='op'>=</span> <span class='ident'>PrefixMapping</span>::<span class='ident'>default</span>();
-<span class='ident'>mapper</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='string'>&quot;http://xmlns.com/foaf/0.1/&quot;</span>);
+<span class='ident'>mapper</span>.<span class='ident'>add_prefix</span>(<span class='string'>&quot;foaf&quot;</span>, <span class='string'>&quot;http://xmlns.com/foaf/0.1/&quot;</span>).<span class='ident'>unwrap</span>();
 
 <span class='comment'>// Set a default prefix</span>
 <span class='ident'>mapper</span>.<span class='ident'>set_default</span>(<span class='string'>&quot;http://example.com/&quot;</span>);
@@ -95,10 +95,17 @@ CURIEs (Compact URIs).</p>
                        </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
                        <tr class=' module-item'>
-                           <td><a class='enum' href='enum.PrefixMappingError.html'
-                                  title='curie::PrefixMappingError'>PrefixMappingError</a></td>
+                           <td><a class='enum' href='enum.ExpansionError.html'
+                                  title='curie::ExpansionError'>ExpansionError</a></td>
                            <td class='docblock short'>
                                 <p>Errors that might occur during CURIE expansion.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.InvalidPrefixError.html'
+                                  title='curie::InvalidPrefixError'>InvalidPrefixError</a></td>
+                           <td class='docblock short'>
+                                <p>Errors that might occur when adding a prefix to a <code>PrefixMapping</code>.</p>
                            </td>
                        </tr></table></section>
     <section id='search' class="content hidden"></section>
