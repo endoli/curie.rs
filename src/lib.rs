@@ -148,11 +148,15 @@ mod tests {
         assert_eq!(pm.mapping.get("foaf"), None);
 
         // Add and look up a key.
-        pm.add_prefix("foaf", FOAF_VOCAB).unwrap();
+        assert_eq!(pm.add_prefix("foaf", FOAF_VOCAB), Ok(()));
         assert_eq!(pm.mapping.get("foaf"), Some(&String::from(FOAF_VOCAB)));
 
         // Unrelated keys still can not be found.
         assert_eq!(pm.mapping.get("rdfs"), None);
+
+        // Can't add _ as that's reserved.
+        assert_eq!(pm.add_prefix("_", ""),
+                   Err(InvalidPrefixError::ReservedPrefix));
 
         // Keys can be removed.
         pm.remove_prefix("foaf");
