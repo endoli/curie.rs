@@ -106,22 +106,18 @@ impl PrefixMapping {
                 } else {
                     Err(PrefixMappingError::Invalid)
                 }
-            } else {
+            } else if let Some(ref default) = self.default {
                 // Separator was first character, so look for default.
                 // No separator, so look for default.
-                if let Some(ref default) = self.default {
-                    Ok(default.clone() + reference)
-                } else {
-                    Err(PrefixMappingError::MissingDefault)
-                }
-            }
-        } else {
-            // No separator, so look for default.
-            if let Some(ref default) = self.default {
-                Ok(default.clone() + curie)
+                Ok(default.clone() + reference)
             } else {
                 Err(PrefixMappingError::MissingDefault)
             }
+        } else if let Some(ref default) = self.default {
+            // No separator, so look for default.
+            Ok(default.clone() + curie)
+        } else {
+            Err(PrefixMappingError::MissingDefault)
         }
     }
 }
