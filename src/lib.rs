@@ -15,12 +15,15 @@
 //!
 //! Example CURIEs:
 //!
-//! * `"foaf:Person"` -- Results in a URI in the `foaf` namespace.
-//! * `":Person"` -- Results in a URI in the default namespace.
+//! * `"foaf:Person"` -- Results in a URI in the namespace represented by
+//!   the `"foaf"` prefix.
+//! * `":Person"` -- Results in a URI in the namespace represented by
+//!   the `""` prefix.
 //! * `"Person"` -- Results in a URI in the default namespace.
 //!
-//! The last two examples rely upon there being a default mapping providing
-//! a default base URI.
+//! The last example relies upon there being a default mapping providing
+//! a default base URI, while the example before it relies upon there
+//! being a prefix which is an empty string.
 //!
 //! See the [specification] for further details.
 //!
@@ -151,18 +154,10 @@ impl PrefixMapping {
             let reference = &curie[separator_idx + 1..];
 
             // If we have a separator, try to expand.
-            if separator_idx > 0 {
-                if let Some(mapped_prefix) = self.mapping.get(prefix) {
-                    Ok((*mapped_prefix).clone() + reference)
-                } else {
-                    Err(ExpansionError::Invalid)
-                }
-            } else if let Some(ref default) = self.default {
-                // Separator was first character, so look for default.
-                // No separator, so look for default.
-                Ok(default.clone() + reference)
+            if let Some(mapped_prefix) = self.mapping.get(prefix) {
+                Ok((*mapped_prefix).clone() + reference)
             } else {
-                Err(ExpansionError::MissingDefault)
+                Err(ExpansionError::Invalid)
             }
         } else if let Some(ref default) = self.default {
             // No separator, so look for default.
@@ -223,9 +218,12 @@ mod tests {
         assert_eq!(mapping.expand("Person"),
                    Ok(String::from("http://example.com/Person")));
 
-        // Using a colon without a prefix results in using the default.
+        // Using a colon without a prefix results in using a prefix
+        // for an empty string.
+        assert_eq!(mapping.expand(":Person"), Err(ExpansionError::Invalid));
+        mapping.add_prefix("", "http://example.com/ExampleDocument#").unwrap();
         assert_eq!(mapping.expand(":Person"),
-                   Ok(String::from("http://example.com/Person")));
+                   Ok(String::from("http://example.com/ExampleDocument#Person")));
 
         // And having a default won't allow a prefixed CURIE to
         // be expanded with the default.
