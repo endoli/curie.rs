@@ -63,26 +63,26 @@ pub enum PrefixMappingError {
 /// Maps prefixes to base URIs and allows for the expansion of
 /// CURIEs (Compact URIs).
 #[derive(Default)]
-pub struct PrefixMapping<'pm> {
-    default: Option<&'pm str>,
-    mapping: HashMap<&'pm str, &'pm str>,
+pub struct PrefixMapping {
+    default: Option<String>,
+    mapping: HashMap<String, String>,
 }
 
-impl<'pm> PrefixMapping<'pm> {
+impl PrefixMapping {
     /// Set a default prefix.
     ///
     /// This is used during CURIE expansion when there is no
     /// prefix, just a reference value.
-    pub fn set_default(&mut self, default: &'pm str) {
-        self.default = Some(default)
+    pub fn set_default(&mut self, default: &str) {
+        self.default = Some(String::from(default));
     }
 
     /// Add a prefix to the mapping.
     ///
     /// This allows this prefix to be resolved when `expand` is
     /// invoked on a CURIE.
-    pub fn add_prefix(&mut self, prefix: &'pm str, value: &'pm str) {
-        self.mapping.insert(prefix, value);
+    pub fn add_prefix(&mut self, prefix: &str, value: &str) {
+        self.mapping.insert(String::from(prefix), String::from(value));
     }
 
     /// Remove a prefix from the mapping.
@@ -102,23 +102,23 @@ impl<'pm> PrefixMapping<'pm> {
             // If we have a separator, try to expand.
             if separator_idx > 0 {
                 if let Some(mapped_prefix) = self.mapping.get(prefix) {
-                    Ok(String::from(*mapped_prefix) + reference)
+                    Ok((*mapped_prefix).clone() + reference)
                 } else {
                     Err(PrefixMappingError::Invalid)
                 }
             } else {
                 // Separator was first character, so look for default.
                 // No separator, so look for default.
-                if let Some(default) = self.default {
-                    Ok(String::from(default) + reference)
+                if let Some(ref default) = self.default {
+                    Ok(default.clone() + reference)
                 } else {
                     Err(PrefixMappingError::MissingDefault)
                 }
             }
         } else {
             // No separator, so look for default.
-            if let Some(default) = self.default {
-                Ok(String::from(default) + curie)
+            if let Some(ref default) = self.default {
+                Ok(default.clone() + curie)
             } else {
                 Err(PrefixMappingError::MissingDefault)
             }
@@ -141,7 +141,7 @@ mod tests {
 
         // Add and look up a key.
         pm.add_prefix("foaf", FOAF_VOCAB);
-        assert_eq!(pm.mapping.get("foaf"), Some(&FOAF_VOCAB));
+        assert_eq!(pm.mapping.get("foaf"), Some(&String::from(FOAF_VOCAB)));
 
         // Unrelated keys still can not be found.
         assert_eq!(pm.mapping.get("rdfs"), None);
