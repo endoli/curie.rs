@@ -47,7 +47,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-0' class='srclink' href='../src/curie/src/lib.rs.html#7-204' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-0' class='srclink' href='../src/curie/src/lib.rs.html#7-240' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id='curies-compact-uris' class='section-header'><a href='#curies-compact-uris'>CURIEs: Compact URIs</a></h1>
 <p>CURIEs, <a href="https://www.w3.org/TR/curie/">defined by the W3C</a>, are a compact way of representing a URI.
@@ -69,6 +69,39 @@ applications.</p>
 a default base URI.</p>
 
 <p>See the <a href="https://www.w3.org/TR/curie/">specification</a> for further details.</p>
+
+<h2 id='compact-uris-in-the-real-world' class='section-header'><a href='#compact-uris-in-the-real-world'>Compact URIs in the Real World</a></h2>
+<p>In SPARQL (from Wikipedia):</p>
+
+<pre><code class="language-sparql">PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+SELECT ?name
+       ?email
+WHERE
+  {
+    ?person  a          foaf:Person .
+    ?person  foaf:name  ?name .
+    ?person  foaf:mbox  ?email .
+  }
+</code></pre>
+
+<p>In the Turtle serialization for RDF (from the specification):</p>
+
+<pre><code class="language-turtle">@base &lt;http://example.org/&gt; .
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+@prefix rel: &lt;http://www.perceive.net/schemas/relationship/&gt; .
+
+&lt;#green-goblin&gt;
+    rel:enemyOf &lt;#spiderman&gt; ;
+    a foaf:Person ;    # in the context of the Marvel universe
+    foaf:name &quot;Green Goblin&quot; .
+
+&lt;#spiderman&gt;
+    rel:enemyOf &lt;#green-goblin&gt; ;
+    a foaf:Person ;
+    foaf:name &quot;Spiderman&quot;, &quot;Человек-паук&quot;@ru .
+</code></pre>
 
 <h2 id='usage' class='section-header'><a href='#usage'>Usage</a></h2>
 <pre class='rust rust-example-rendered'>

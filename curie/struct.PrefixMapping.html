@@ -47,12 +47,12 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-39' class='srclink' href='../src/curie/src/lib.rs.html#76-79' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-39' class='srclink' href='../src/curie/src/lib.rs.html#112-115' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct PrefixMapping {
     // some fields omitted
 }</pre><div class='docblock'><p>Maps prefixes to base URIs and allows for the expansion of
 CURIEs (Compact URIs).</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../curie/struct.PrefixMapping.html' title='curie::PrefixMapping'>PrefixMapping</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-44' class='srclink' href='../src/curie/src/lib.rs.html#81-138' title='goto source code'>[src]</a></span></h3>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../curie/struct.PrefixMapping.html' title='curie::PrefixMapping'>PrefixMapping</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-44' class='srclink' href='../src/curie/src/lib.rs.html#117-174' title='goto source code'>[src]</a></span></h3>
 <div class='impl-items'><h4 id='method.set_default' class='method'><code>fn <a href='#method.set_default' class='fnname'>set_default</a>(&amp;mut self, default: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>)</code></h4>
 <div class='docblock'><p>Set a default prefix.</p>
 
@@ -70,7 +70,7 @@ invoked on a CURIE.</p>
 in a <code>ExpansionError::Invalid</code> error.</p>
 </div><h4 id='method.expand' class='method'><code>fn <a href='#method.expand' class='fnname'>expand</a>(&amp;self, curie: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, <a class='enum' href='../curie/enum.ExpansionError.html' title='curie::ExpansionError'>ExpansionError</a>&gt;</code></h4>
 <div class='docblock'><p>Expand a CURIE, returning a complete IRI.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../curie/struct.PrefixMapping.html' title='curie::PrefixMapping'>PrefixMapping</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-42' class='srclink' href='../src/curie/src/lib.rs.html#75' title='goto source code'>[src]</a></span></h3>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../curie/struct.PrefixMapping.html' title='curie::PrefixMapping'>PrefixMapping</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-42' class='srclink' href='../src/curie/src/lib.rs.html#111' title='goto source code'>[src]</a></span></h3>
 <div class='impl-items'><h4 id='method.default' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../curie/struct.PrefixMapping.html' title='curie::PrefixMapping'>PrefixMapping</a></code></h4>
 <div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
 </div></div></section>
