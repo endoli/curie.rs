@@ -24,6 +24,42 @@
 //!
 //! See the [specification] for further details.
 //!
+//! ## Compact URIs in the Real World
+//!
+//! In SPARQL (from Wikipedia):
+//!
+//! ```sparql
+//! PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+//! SELECT ?name
+//!        ?email
+//! WHERE
+//!   {
+//!     ?person  a          foaf:Person .
+//!     ?person  foaf:name  ?name .
+//!     ?person  foaf:mbox  ?email .
+//!   }
+//! ```
+//!
+//! In the Turtle serialization for RDF (from the specification):
+//!
+//! ```turtle
+//! @base <http://example.org/> .
+//! @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+//! @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+//! @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+//! @prefix rel: <http://www.perceive.net/schemas/relationship/> .
+//!
+//! <#green-goblin>
+//!     rel:enemyOf <#spiderman> ;
+//!     a foaf:Person ;    # in the context of the Marvel universe
+//!     foaf:name "Green Goblin" .
+//!
+//! <#spiderman>
+//!     rel:enemyOf <#green-goblin> ;
+//!     a foaf:Person ;
+//!     foaf:name "Spiderman", "Человек-паук"@ru .
+//! ```
+//!
 //! ## Usage
 //!
 //! ```
