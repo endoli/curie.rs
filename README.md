@@ -18,7 +18,7 @@ Add it to your `Cargo.toml` like so:
 
 ```toml
 [dependencies]
-curie = "0.0.1"
+curie = "0.0.2"
 ```
 
 ## Status of Implementation
