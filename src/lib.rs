@@ -76,9 +76,27 @@
 //! mapper.set_default("http://example.com/");
 //!
 //! // Expand a CURIE and get back the full URI.
-//! assert_eq!(mapper.expand("Entity"),
+//! assert_eq!(mapper.expand_curie_string("Entity"),
 //!            Ok(String::from("http://example.com/Entity")));
-//! assert_eq!(mapper.expand("foaf:Agent"),
+//! assert_eq!(mapper.expand_curie_string("foaf:Agent"),
+//!            Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
+//! ```
+//!
+//! When parsing a file, it is likely that the distinction between
+//! the prefix and the reference portions of the CURIE will be clear,
+//! so to save time during expansion, the `Curie` struct can also be
+//! used:
+//!
+//! ```
+//! use curie::{Curie, PrefixMapping};
+//!
+//! // Initialize a prefix mapper.
+//! let mut mapper = PrefixMapping::default();
+//! mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/").unwrap();
+//!
+//! let curie = Curie::new("foaf", "Agent");
+//!
+//! assert_eq!(mapper.expand_curie(&curie),
 //!            Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
 //! ```
 //!
@@ -128,8 +146,7 @@ impl PrefixMapping {
 
     /// Add a prefix to the mapping.
     ///
-    /// This allows this prefix to be resolved when `expand` is
-    /// invoked on a CURIE.
+    /// This allows this prefix to be resolved when a CURIE is expanded.
     pub fn add_prefix(&mut self, prefix: &str, value: &str) -> Result<(), InvalidPrefixError> {
         if prefix == "_" {
             Err(InvalidPrefixError::ReservedPrefix)
@@ -141,29 +158,56 @@ impl PrefixMapping {
 
     /// Remove a prefix from the mapping.
     ///
-    /// Future calls to `expand` that use this `prefix` will result
-    /// in a `ExpansionError::Invalid` error.
+    /// Future calls to `expand_curie_string` or `expand_curie` that use
+    /// this `prefix` will result in a `ExpansionError::Invalid` error.
     pub fn remove_prefix(&mut self, prefix: &str) {
         self.mapping.remove(prefix);
     }
 
     /// Expand a CURIE, returning a complete IRI.
-    pub fn expand(&self, curie: &str) -> Result<String, ExpansionError> {
+    pub fn expand_curie_string(&self, curie: &str) -> Result<String, ExpansionError> {
         if let Some(separator_idx) = curie.chars().position(|c| c == ':') {
+            // If we have a separator, try to expand.
             let prefix = &curie[..separator_idx];
             let reference = &curie[separator_idx + 1..];
-
-            // If we have a separator, try to expand.
-            if let Some(mapped_prefix) = self.mapping.get(prefix) {
-                Ok((*mapped_prefix).clone() + reference)
-            } else {
-                Err(ExpansionError::Invalid)
-            }
+            self.expand_exploded_curie(prefix, reference)
         } else if let Some(ref default) = self.default {
             // No separator, so look for default.
             Ok(default.clone() + curie)
         } else {
             Err(ExpansionError::MissingDefault)
+        }
+    }
+
+    /// Expand a parsed `Curie`, returning a complete IRI.
+    pub fn expand_curie(&self, curie: &Curie) -> Result<String, ExpansionError> {
+        self.expand_exploded_curie(curie.prefix, curie.reference)
+    }
+
+    fn expand_exploded_curie(&self,
+                             prefix: &str,
+                             reference: &str)
+                             -> Result<String, ExpansionError> {
+        if let Some(mapped_prefix) = self.mapping.get(prefix) {
+            Ok((*mapped_prefix).clone() + reference)
+        } else {
+            Err(ExpansionError::Invalid)
+        }
+    }
+}
+
+/// A prefix and reference, already parsed into separate components.
+pub struct Curie<'c> {
+    prefix: &'c str,
+    reference: &'c str,
+}
+
+impl<'c> Curie<'c> {
+    /// Construct a `Curie` from a prefix and reference.
+    pub fn new(prefix: &'c str, reference: &'c str) -> Self {
+        Curie {
+            prefix: prefix,
+            reference: reference,
         }
     }
 }
@@ -200,39 +244,52 @@ mod tests {
     }
 
     #[test]
-    fn expand() {
+    fn expand_curie_string() {
         let mut mapping = PrefixMapping::default();
 
         let curie = "foaf:Person";
 
         // A CURIE with an unmapped prefix isn't expanded.
-        assert_eq!(mapping.expand(curie), Err(ExpansionError::Invalid));
+        assert_eq!(mapping.expand_curie_string(curie),
+                   Err(ExpansionError::Invalid));
 
         // A CURIE without a separator doesn't cause problems. It still
         // requires a default though.
-        assert_eq!(mapping.expand("Person"),
+        assert_eq!(mapping.expand_curie_string("Person"),
                    Err(ExpansionError::MissingDefault));
 
         mapping.set_default("http://example.com/");
 
-        assert_eq!(mapping.expand("Person"),
+        assert_eq!(mapping.expand_curie_string("Person"),
                    Ok(String::from("http://example.com/Person")));
 
         // Using a colon without a prefix results in using a prefix
         // for an empty string.
-        assert_eq!(mapping.expand(":Person"), Err(ExpansionError::Invalid));
+        assert_eq!(mapping.expand_curie_string(":Person"),
+                   Err(ExpansionError::Invalid));
         mapping.add_prefix("", "http://example.com/ExampleDocument#").unwrap();
-        assert_eq!(mapping.expand(":Person"),
+        assert_eq!(mapping.expand_curie_string(":Person"),
                    Ok(String::from("http://example.com/ExampleDocument#Person")));
 
         // And having a default won't allow a prefixed CURIE to
         // be expanded with the default.
-        assert_eq!(mapping.expand(curie), Err(ExpansionError::Invalid));
+        assert_eq!(mapping.expand_curie_string(curie),
+                   Err(ExpansionError::Invalid));
 
         mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
 
         // A CURIE with a mapped prefix is expanded correctly.
-        assert_eq!(mapping.expand(curie),
+        assert_eq!(mapping.expand_curie_string(curie),
                    Ok(String::from("http://xmlns.com/foaf/0.1/Person")));
+    }
+
+    #[test]
+    fn expand_curie() {
+        let mut mapping = PrefixMapping::default();
+        mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
+
+        let curie = Curie::new("foaf", "Agent");
+        assert_eq!(mapping.expand_curie(&curie),
+                   Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
     }
 }
