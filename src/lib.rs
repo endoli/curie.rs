@@ -202,6 +202,13 @@ impl PrefixMapping {
             Err(ExpansionError::Invalid)
         }
     }
+
+    /// Return an iterator over the prefix mappings.
+    ///
+    /// This is useful when testing code that uses this crate.
+    pub fn mappings(&self) -> ::std::collections::hash_map::Iter<String, String> {
+        self.mapping.iter()
+    }
 }
 
 /// A prefix and reference, already parsed into separate components.
