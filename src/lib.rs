@@ -104,9 +104,8 @@
 //! [specification]: https://www.w3.org/TR/curie/
 
 #![warn(missing_docs)]
-#![deny(trivial_numeric_casts,
-        unsafe_code, unstable_features,
-        unused_import_braces, unused_qualifications)]
+#![deny(trivial_numeric_casts, unsafe_code, unstable_features, unused_import_braces,
+        unused_qualifications)]
 
 use std::collections::HashMap;
 
@@ -151,7 +150,8 @@ impl PrefixMapping {
         if prefix == "_" {
             Err(InvalidPrefixError::ReservedPrefix)
         } else {
-            self.mapping.insert(String::from(prefix), String::from(value));
+            self.mapping
+                .insert(String::from(prefix), String::from(value));
             Ok(())
         }
     }
@@ -184,10 +184,11 @@ impl PrefixMapping {
         self.expand_exploded_curie(curie.prefix, curie.reference)
     }
 
-    fn expand_exploded_curie(&self,
-                             prefix: &str,
-                             reference: &str)
-                             -> Result<String, ExpansionError> {
+    fn expand_exploded_curie(
+        &self,
+        prefix: &str,
+        reference: &str,
+    ) -> Result<String, ExpansionError> {
         if let Some(mapped_prefix) = self.mapping.get(prefix) {
             Ok((*mapped_prefix).clone() + reference)
         } else {
@@ -233,8 +234,10 @@ mod tests {
         assert_eq!(pm.mapping.get("rdfs"), None);
 
         // Can't add _ as that's reserved.
-        assert_eq!(pm.add_prefix("_", ""),
-                   Err(InvalidPrefixError::ReservedPrefix));
+        assert_eq!(
+            pm.add_prefix("_", ""),
+            Err(InvalidPrefixError::ReservedPrefix)
+        );
 
         // Keys can be removed.
         pm.remove_prefix("foaf");
@@ -250,37 +253,53 @@ mod tests {
         let curie = "foaf:Person";
 
         // A CURIE with an unmapped prefix isn't expanded.
-        assert_eq!(mapping.expand_curie_string(curie),
-                   Err(ExpansionError::Invalid));
+        assert_eq!(
+            mapping.expand_curie_string(curie),
+            Err(ExpansionError::Invalid)
+        );
 
         // A CURIE without a separator doesn't cause problems. It still
         // requires a default though.
-        assert_eq!(mapping.expand_curie_string("Person"),
-                   Err(ExpansionError::MissingDefault));
+        assert_eq!(
+            mapping.expand_curie_string("Person"),
+            Err(ExpansionError::MissingDefault)
+        );
 
         mapping.set_default("http://example.com/");
 
-        assert_eq!(mapping.expand_curie_string("Person"),
-                   Ok(String::from("http://example.com/Person")));
+        assert_eq!(
+            mapping.expand_curie_string("Person"),
+            Ok(String::from("http://example.com/Person"))
+        );
 
         // Using a colon without a prefix results in using a prefix
         // for an empty string.
-        assert_eq!(mapping.expand_curie_string(":Person"),
-                   Err(ExpansionError::Invalid));
-        mapping.add_prefix("", "http://example.com/ExampleDocument#").unwrap();
-        assert_eq!(mapping.expand_curie_string(":Person"),
-                   Ok(String::from("http://example.com/ExampleDocument#Person")));
+        assert_eq!(
+            mapping.expand_curie_string(":Person"),
+            Err(ExpansionError::Invalid)
+        );
+        mapping
+            .add_prefix("", "http://example.com/ExampleDocument#")
+            .unwrap();
+        assert_eq!(
+            mapping.expand_curie_string(":Person"),
+            Ok(String::from("http://example.com/ExampleDocument#Person"))
+        );
 
         // And having a default won't allow a prefixed CURIE to
         // be expanded with the default.
-        assert_eq!(mapping.expand_curie_string(curie),
-                   Err(ExpansionError::Invalid));
+        assert_eq!(
+            mapping.expand_curie_string(curie),
+            Err(ExpansionError::Invalid)
+        );
 
         mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
 
         // A CURIE with a mapped prefix is expanded correctly.
-        assert_eq!(mapping.expand_curie_string(curie),
-                   Ok(String::from("http://xmlns.com/foaf/0.1/Person")));
+        assert_eq!(
+            mapping.expand_curie_string(curie),
+            Ok(String::from("http://xmlns.com/foaf/0.1/Person"))
+        );
     }
 
     #[test]
@@ -289,7 +308,9 @@ mod tests {
         mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
 
         let curie = Curie::new("foaf", "Agent");
-        assert_eq!(mapping.expand_curie(&curie),
-                   Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
+        assert_eq!(
+            mapping.expand_curie(&curie),
+            Ok(String::from("http://xmlns.com/foaf/0.1/Agent"))
+        );
     }
 }
