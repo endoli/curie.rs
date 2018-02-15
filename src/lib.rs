@@ -109,7 +109,9 @@
 
 use std::collections::HashMap;
 
-/// Errors that might occur when adding a prefix to a `PrefixMapping`.
+/// Errors that might occur when adding a prefix to a [`PrefixMapping`].
+///
+/// [`PrefixMapping`]: struct.PrefixMapping.html
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum InvalidPrefixError {
     /// This is a reserved prefix.
@@ -158,8 +160,11 @@ impl PrefixMapping {
 
     /// Remove a prefix from the mapping.
     ///
-    /// Future calls to `expand_curie_string` or `expand_curie` that use
+    /// Future calls to [`expand_curie_string`] or [`expand_curie`] that use
     /// this `prefix` will result in a `ExpansionError::Invalid` error.
+    ///
+    /// [`expand_curie_string`]: struct.PrefixMapping.html#method.expand_curie_string
+    /// [`expand_curie`]: struct.PrefixMapping.html#method.expand_curie
     pub fn remove_prefix(&mut self, prefix: &str) {
         self.mapping.remove(prefix);
     }
@@ -179,7 +184,9 @@ impl PrefixMapping {
         }
     }
 
-    /// Expand a parsed `Curie`, returning a complete IRI.
+    /// Expand a parsed [`Curie`], returning a complete IRI.
+    ///
+    /// [`Curie`]: struct.Curie.html
     pub fn expand_curie(&self, curie: &Curie) -> Result<String, ExpansionError> {
         self.expand_exploded_curie(curie.prefix, curie.reference)
     }
