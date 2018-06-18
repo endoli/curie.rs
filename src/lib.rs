@@ -108,6 +108,7 @@
         unused_qualifications)]
 
 use std::collections::HashMap;
+use std::fmt;
 
 /// Errors that might occur when adding a prefix to a [`PrefixMapping`].
 ///
@@ -212,6 +213,7 @@ impl PrefixMapping {
 }
 
 /// A prefix and reference, already parsed into separate components.
+#[derive(Debug)]
 pub struct Curie<'c> {
     prefix: &'c str,
     reference: &'c str,
@@ -224,6 +226,12 @@ impl<'c> Curie<'c> {
             prefix: prefix,
             reference: reference,
         }
+    }
+}
+
+impl<'c> fmt::Display for Curie<'c> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}:{}", self.prefix, self.reference)
     }
 }
 
@@ -258,6 +266,12 @@ mod tests {
 
         // The "foaf" key should not be found.
         assert_eq!(pm.mapping.get("foaf"), None);
+    }
+
+    #[test]
+    fn display_curie() {
+        let curie = Curie::new("foaf", "Agent");
+        assert_eq!(String::from("foaf:Agent"), format!("{}", curie));
     }
 
     #[test]
