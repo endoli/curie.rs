@@ -222,10 +222,7 @@ pub struct Curie<'c> {
 impl<'c> Curie<'c> {
     /// Construct a `Curie` from a prefix and reference.
     pub fn new(prefix: &'c str, reference: &'c str) -> Self {
-        Curie {
-            prefix: prefix,
-            reference: reference,
-        }
+        Curie { prefix, reference }
     }
 }
 
