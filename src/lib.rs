@@ -84,7 +84,7 @@
 //!
 //! When parsing a file, it is likely that the distinction between
 //! the prefix and the reference portions of the CURIE will be clear,
-//! so to save time during expansion, the `Curie` struct can also be
+//! so to save time during expansion, the [`Curie`] struct can also be
 //! used:
 //!
 //! ```
@@ -102,6 +102,7 @@
 //!
 //! [defined by the W3C]: https://www.w3.org/TR/curie/
 //! [specification]: https://www.w3.org/TR/curie/
+//! [`Curie`]: struct.Curie.html
 
 #![warn(missing_docs)]
 #![deny(
@@ -118,6 +119,8 @@ use std::fmt;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum InvalidPrefixError {
     /// This is a reserved prefix.
+    ///
+    /// The prefix `"_"` is reserved.
     ReservedPrefix,
 }
 
@@ -133,6 +136,15 @@ pub enum ExpansionError {
 
 /// Maps prefixes to base URIs and allows for the expansion of
 /// CURIEs (Compact URIs).
+///
+/// # Examples
+///
+/// ```
+/// use curie::PrefixMapping;
+///
+/// // Create using the `Default` trait:
+/// let mut mapping = PrefixMapping::default();
+/// ```
 #[derive(Default)]
 pub struct PrefixMapping {
     default: Option<String>,
@@ -144,6 +156,24 @@ impl PrefixMapping {
     ///
     /// This is used during CURIE expansion when there is no
     /// prefix, just a reference value.
+    ///
+    /// # Example:
+    ///
+    /// ```
+    /// use curie::{ExpansionError, PrefixMapping};
+    ///
+    /// let mut mapping = PrefixMapping::default();
+    ///
+    /// // No default has been configured, so an error will be
+    /// // signaled.
+    /// assert_eq!(mapping.expand_curie_string("Entity"),
+    ///            Err(ExpansionError::MissingDefault));
+    ///
+    /// mapping.set_default("http://example.com/");
+    ///
+    /// assert_eq!(mapping.expand_curie_string("Entity"),
+    ///            Ok(String::from("http://example.com/Entity")));
+    /// ```
     pub fn set_default(&mut self, default: &str) {
         self.default = Some(String::from(default));
     }
@@ -215,6 +245,52 @@ impl PrefixMapping {
 }
 
 /// A prefix and reference, already parsed into separate components.
+///
+/// When parsing a document, the components of the compact URI will already
+/// have been parsed and we can avoid storing a string of the full compact
+/// URI and having to do that work again when expanding the compact URI.
+///
+/// The `'c` lifetime parameter will typically be the lifetime of the body
+/// of text which is being parsed and contains the compact URIs.
+///
+/// # Usage:
+///
+/// ## Creation:
+///
+/// ```
+/// # use curie::Curie;
+/// let c = Curie::new("foaf", "Person");
+/// ```
+///
+/// ## Expansion:
+///
+/// Expanding a `Curie` requires the use of a properly initialized
+/// [`PrefixMapping`].
+///
+/// ```
+/// # use curie::{Curie, PrefixMapping};
+/// // Initialize a prefix mapper.
+/// let mut mapper = PrefixMapping::default();
+/// mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/").unwrap();
+///
+/// let curie = Curie::new("foaf", "Agent");
+///
+/// assert_eq!(mapper.expand_curie(&curie),
+///            Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
+/// ```
+///
+/// ## Display / Formatting:
+///
+/// `Curie` implements the `Debug` and `Display` traits, so it integrates with
+/// the Rust standard library facilities.
+///
+/// ```
+/// # use curie::Curie;
+/// let curie = Curie::new("foaf", "Agent");
+/// assert_eq!("foaf:Agent", format!("{}", curie));
+/// ```
+///
+/// [`PrefixMapping`]: struct.PrefixMapping.html
 #[derive(Debug)]
 pub struct Curie<'c> {
     prefix: &'c str,
@@ -270,7 +346,7 @@ mod tests {
     #[test]
     fn display_curie() {
         let curie = Curie::new("foaf", "Agent");
-        assert_eq!(String::from("foaf:Agent"), format!("{}", curie));
+        assert_eq!("foaf:Agent", format!("{}", curie));
     }
 
     #[test]
