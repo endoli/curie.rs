@@ -1,5 +1,5 @@
 (function() {var implementors = {};
-implementors["curie"] = ["impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='enum' href='curie/enum.InvalidPrefixError.html' title='curie::InvalidPrefixError'>InvalidPrefixError</a>","impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='enum' href='curie/enum.ExpansionError.html' title='curie::ExpansionError'>ExpansionError</a>",];
+implementors["curie"] = [{text:"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html\" title=\"trait core::clone::Clone\">Clone</a> for <a class=\"enum\" href=\"curie/enum.InvalidPrefixError.html\" title=\"enum curie::InvalidPrefixError\">InvalidPrefixError</a>",synthetic:false,types:["curie::InvalidPrefixError"]},{text:"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html\" title=\"trait core::clone::Clone\">Clone</a> for <a class=\"enum\" href=\"curie/enum.ExpansionError.html\" title=\"enum curie::ExpansionError\">ExpansionError</a>",synthetic:false,types:["curie::ExpansionError"]},];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);
