@@ -100,6 +100,21 @@
 //!            Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
 //! ```
 //!
+//! Given an IRI is also possible to derive an CURIE.
+//!
+//! ```
+//! use curie::{Curie, PrefixMapping};
+//!
+//! // Initialize a prefix mapper.
+//! let mut mapper = PrefixMapping::default();
+//! mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/").unwrap();
+//!
+//! let curie = Curie::new("foaf", "Agent");
+//!
+//! assert_eq!(Ok(curie),
+//!            mapper.shrink_iri("http://xmlns.com/foaf/0.1/Agent"));
+//! ```
+//!
 //! [defined by the W3C]: https://www.w3.org/TR/curie/
 //! [specification]: https://www.w3.org/TR/curie/
 //! [`Curie`]: struct.Curie.html
@@ -236,6 +251,25 @@ impl PrefixMapping {
         }
     }
 
+    /// Shrink an IRI returning a [`Curie`]
+    ///
+    /// [`Curie`]: struct.Curie.html
+    pub fn shrink_iri<'a>(&'a self, iri: &'a str) -> Result<Curie<'a>, &'static str> {
+        if let Some(ref def) = self.default {
+            if iri.starts_with(def) {
+                return Ok(Curie::new("", iri.trim_left_matches(def)));
+            }
+        }
+
+        for mp in self.mapping.iter() {
+            if iri.starts_with(mp.1) {
+                return Ok(Curie::new(mp.0, iri.trim_left_matches(mp.1)));
+            }
+        }
+
+        return Err("Unable to shorten");
+    }
+
     /// Return an iterator over the prefix mappings.
     ///
     /// This is useful when testing code that uses this crate.
@@ -291,7 +325,7 @@ impl PrefixMapping {
 /// ```
 ///
 /// [`PrefixMapping`]: struct.PrefixMapping.html
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Curie<'c> {
     prefix: &'c str,
     reference: &'c str,
@@ -416,4 +450,31 @@ mod tests {
             Ok(String::from("http://xmlns.com/foaf/0.1/Agent"))
         );
     }
+
+    #[test]
+    fn shrink_iri_prefix() {
+        let mut mapping = PrefixMapping::default();
+        mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
+
+        let curie = Curie::new("foaf", "Agent");
+
+        assert_eq!(
+            mapping.shrink_iri("http://xmlns.com/foaf/0.1/Agent"),
+            Ok(curie)
+        );
+    }
+
+    #[test]
+    fn split_iri_default() {
+        let mut mapping = PrefixMapping::default();
+        mapping.set_default(FOAF_VOCAB);
+
+        let curie = Curie::new("", "Agent");
+
+        assert_eq!(
+            mapping.shrink_iri("http://xmlns.com/foaf/0.1/Agent"),
+            Ok(curie)
+        );
+    }
+
 }
