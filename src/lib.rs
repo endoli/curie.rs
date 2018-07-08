@@ -94,7 +94,7 @@
 //! let mut mapper = PrefixMapping::default();
 //! mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/").unwrap();
 //!
-//! let curie = Curie::new("foaf", "Agent");
+//! let curie = Curie::new(Some("foaf"), "Agent");
 //!
 //! assert_eq!(mapper.expand_curie(&curie),
 //!            Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
@@ -109,7 +109,7 @@
 //! let mut mapper = PrefixMapping::default();
 //! mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/").unwrap();
 //!
-//! let curie = Curie::new("foaf", "Agent");
+//! let curie = Curie::new(Some("foaf"), "Agent");
 //!
 //! assert_eq!(Ok(curie),
 //!            mapper.shrink_iri("http://xmlns.com/foaf/0.1/Agent"));
@@ -218,17 +218,16 @@ impl PrefixMapping {
     }
 
     /// Expand a CURIE, returning a complete IRI.
-    pub fn expand_curie_string(&self, curie: &str) -> Result<String, ExpansionError> {
-        if let Some(separator_idx) = curie.chars().position(|c| c == ':') {
+    pub fn expand_curie_string(&self, curie_str: &str) -> Result<String, ExpansionError> {
+        if let Some(separator_idx) = curie_str.chars().position(|c| c == ':') {
             // If we have a separator, try to expand.
-            let prefix = &curie[..separator_idx];
-            let reference = &curie[separator_idx + 1..];
-            self.expand_exploded_curie(prefix, reference)
-        } else if let Some(ref default) = self.default {
-            // No separator, so look for default.
-            Ok(default.clone() + curie)
+            let prefix = Some(&curie_str[..separator_idx]);
+            let reference = &curie_str[separator_idx + 1..];
+            let curie = Curie::new(prefix, reference);
+            self.expand_curie(&curie)
         } else {
-            Err(ExpansionError::MissingDefault)
+            let curie = Curie::new(None,curie_str);
+            self.expand_curie(&curie)
         }
     }
 
@@ -241,29 +240,38 @@ impl PrefixMapping {
 
     fn expand_exploded_curie(
         &self,
-        prefix: &str,
+        prefix: Option<&str>,
         reference: &str,
     ) -> Result<String, ExpansionError> {
-        if let Some(mapped_prefix) = self.mapping.get(prefix) {
-            Ok((*mapped_prefix).clone() + reference)
-        } else {
-            Err(ExpansionError::Invalid)
+        if let Some(prefix) = prefix {
+            if let Some(mapped_prefix) = self.mapping.get(prefix) {
+                Ok((*mapped_prefix).clone() + reference)
+            } else {
+                Err(ExpansionError::Invalid)
+            }
+        } else{
+            if let Some(ref default) = self.default {
+                Ok((default).clone () + reference)
+            } else {
+                Err(ExpansionError::MissingDefault)
+            }
         }
     }
 
     /// Shrink an IRI returning a [`Curie`]
     ///
     /// [`Curie`]: struct.Curie.html
-    pub fn shrink_iri<'a>(&'a self, iri: &'a str) -> Result<Curie<'a>, &'static str> {
+    pub fn shrink_iri<'a>(&'a self, iri: &'a str)
+                          -> Result<Curie<'a>, &'static str> {
         if let Some(ref def) = self.default {
             if iri.starts_with(def) {
-                return Ok(Curie::new("", iri.trim_left_matches(def)));
+                return Ok(Curie::new(None, iri.trim_left_matches(def)));
             }
         }
 
         for mp in self.mapping.iter() {
             if iri.starts_with(mp.1) {
-                return Ok(Curie::new(mp.0, iri.trim_left_matches(mp.1)));
+                return Ok(Curie::new(Some(mp.0), iri.trim_left_matches(mp.1)));
             }
         }
 
@@ -293,7 +301,7 @@ impl PrefixMapping {
 ///
 /// ```
 /// # use curie::Curie;
-/// let c = Curie::new("foaf", "Person");
+/// let c = Curie::new(Some("foaf"), "Person");
 /// ```
 ///
 /// ## Expansion:
@@ -307,7 +315,7 @@ impl PrefixMapping {
 /// let mut mapper = PrefixMapping::default();
 /// mapper.add_prefix("foaf", "http://xmlns.com/foaf/0.1/").unwrap();
 ///
-/// let curie = Curie::new("foaf", "Agent");
+/// let curie = Curie::new(Some("foaf"), "Agent");
 ///
 /// assert_eq!(mapper.expand_curie(&curie),
 ///            Ok(String::from("http://xmlns.com/foaf/0.1/Agent")));
@@ -320,27 +328,44 @@ impl PrefixMapping {
 ///
 /// ```
 /// # use curie::Curie;
-/// let curie = Curie::new("foaf", "Agent");
+/// let curie = Curie::new(Some("foaf"), "Agent");
 /// assert_eq!("foaf:Agent", format!("{}", curie));
 /// ```
 ///
 /// [`PrefixMapping`]: struct.PrefixMapping.html
 #[derive(Debug, Eq, PartialEq)]
 pub struct Curie<'c> {
-    prefix: &'c str,
+    prefix: Option<&'c str>,
     reference: &'c str,
 }
 
 impl<'c> Curie<'c> {
     /// Construct a `Curie` from a prefix and reference.
-    pub fn new(prefix: &'c str, reference: &'c str) -> Self {
+    pub fn new(prefix: Option<&'c str>, reference: &'c str) -> Self {
         Curie { prefix, reference }
+    }
+}
+
+impl<'c> From<&'c Curie<'c>> for String {
+    fn from(c:&'c Curie<'c>) -> String {
+        match c.prefix {
+            Some(prefix) =>
+                format!("{}:{}", prefix, c.reference),
+            None =>
+                format!("{}", c.reference),
+        }
+    }
+}
+
+impl<'c> From<Curie<'c>> for String {
+    fn from (c:Curie<'c>) -> String {
+        String::from(&c)
     }
 }
 
 impl<'c> fmt::Display for Curie<'c> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}:{}", self.prefix, self.reference)
+        write!(f, "{}", String::from(self))
     }
 }
 
@@ -379,8 +404,20 @@ mod tests {
 
     #[test]
     fn display_curie() {
-        let curie = Curie::new("foaf", "Agent");
+        let curie = Curie::new(Some("foaf"), "Agent");
         assert_eq!("foaf:Agent", format!("{}", curie));
+    }
+
+    #[test]
+    fn from_string_curie() {
+        let curie = Curie::new(Some("foaf"), "Agent");
+        assert_eq!("foaf:Agent", String::from(curie));
+
+        let curie = Curie::new(None, "Agent");
+        assert_eq!("Agent", String::from(curie));
+
+        let curie = Curie::new(Some("foaf"), "Agent");
+        assert_eq!("foaf:Agent", String::from(&curie));
     }
 
     #[test]
@@ -444,7 +481,19 @@ mod tests {
         let mut mapping = PrefixMapping::default();
         mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
 
-        let curie = Curie::new("foaf", "Agent");
+        let curie = Curie::new(Some("foaf"), "Agent");
+        assert_eq!(
+            mapping.expand_curie(&curie),
+            Ok(String::from("http://xmlns.com/foaf/0.1/Agent"))
+        );
+    }
+
+    #[test]
+    fn expand_curie_default() {
+        let mut mapping = PrefixMapping::default();
+        mapping.set_default(FOAF_VOCAB);
+
+        let curie = Curie::new(None, "Agent");
         assert_eq!(
             mapping.expand_curie(&curie),
             Ok(String::from("http://xmlns.com/foaf/0.1/Agent"))
@@ -456,7 +505,7 @@ mod tests {
         let mut mapping = PrefixMapping::default();
         mapping.add_prefix("foaf", FOAF_VOCAB).unwrap();
 
-        let curie = Curie::new("foaf", "Agent");
+        let curie = Curie::new(Some("foaf"), "Agent");
 
         assert_eq!(
             mapping.shrink_iri("http://xmlns.com/foaf/0.1/Agent"),
@@ -469,7 +518,7 @@ mod tests {
         let mut mapping = PrefixMapping::default();
         mapping.set_default(FOAF_VOCAB);
 
-        let curie = Curie::new("", "Agent");
+        let curie = Curie::new(None, "Agent");
 
         assert_eq!(
             mapping.shrink_iri("http://xmlns.com/foaf/0.1/Agent"),
