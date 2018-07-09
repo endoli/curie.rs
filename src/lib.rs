@@ -252,12 +252,10 @@ impl PrefixMapping {
             } else {
                 Err(ExpansionError::Invalid)
             }
+        } else if let Some(ref default) = self.default {
+            Ok((default).clone() + reference)
         } else {
-            if let Some(ref default) = self.default {
-                Ok((default).clone() + reference)
-            } else {
-                Err(ExpansionError::MissingDefault)
-            }
+            Err(ExpansionError::MissingDefault)
         }
     }
 
@@ -271,13 +269,13 @@ impl PrefixMapping {
             }
         }
 
-        for mp in self.mapping.iter() {
+        for mp in &self.mapping {
             if iri.starts_with(mp.1) {
                 return Ok(Curie::new(Some(mp.0), iri.trim_left_matches(mp.1)));
             }
         }
 
-        return Err("Unable to shorten");
+        Err("Unable to shorten")
     }
 
     /// Return an iterator over the prefix mappings.
@@ -352,7 +350,7 @@ impl<'c> From<&'c Curie<'c>> for String {
     fn from(c: &'c Curie<'c>) -> String {
         match c.prefix {
             Some(prefix) => format!("{}:{}", prefix, c.reference),
-            None => format!("{}", c.reference),
+            None => c.reference.to_string(),
         }
     }
 }
