@@ -348,22 +348,22 @@ impl<'c> Curie<'c> {
 
 impl<'c> From<&'c Curie<'c>> for String {
     fn from(c: &'c Curie<'c>) -> String {
-        match c.prefix {
-            Some(prefix) => format!("{}:{}", prefix, c.reference),
-            None => c.reference.to_string(),
-        }
+        format!("{}", c)
     }
 }
 
 impl<'c> From<Curie<'c>> for String {
     fn from(c: Curie<'c>) -> String {
-        String::from(&c)
+        format!("{}", c)
     }
 }
 
 impl<'c> fmt::Display for Curie<'c> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", String::from(self))
+        match self.prefix {
+            Some(prefix) => write!(f, "{}:{}", prefix, self.reference),
+            None => write!(f, "{}", self.reference),
+        }
     }
 }
 
