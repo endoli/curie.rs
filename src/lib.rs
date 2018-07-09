@@ -226,7 +226,7 @@ impl PrefixMapping {
             let curie = Curie::new(prefix, reference);
             self.expand_curie(&curie)
         } else {
-            let curie = Curie::new(None,curie_str);
+            let curie = Curie::new(None, curie_str);
             self.expand_curie(&curie)
         }
     }
@@ -249,9 +249,9 @@ impl PrefixMapping {
             } else {
                 Err(ExpansionError::Invalid)
             }
-        } else{
+        } else {
             if let Some(ref default) = self.default {
-                Ok((default).clone () + reference)
+                Ok((default).clone() + reference)
             } else {
                 Err(ExpansionError::MissingDefault)
             }
@@ -261,8 +261,7 @@ impl PrefixMapping {
     /// Shrink an IRI returning a [`Curie`]
     ///
     /// [`Curie`]: struct.Curie.html
-    pub fn shrink_iri<'a>(&'a self, iri: &'a str)
-                          -> Result<Curie<'a>, &'static str> {
+    pub fn shrink_iri<'a>(&'a self, iri: &'a str) -> Result<Curie<'a>, &'static str> {
         if let Some(ref def) = self.default {
             if iri.starts_with(def) {
                 return Ok(Curie::new(None, iri.trim_left_matches(def)));
@@ -347,18 +346,16 @@ impl<'c> Curie<'c> {
 }
 
 impl<'c> From<&'c Curie<'c>> for String {
-    fn from(c:&'c Curie<'c>) -> String {
+    fn from(c: &'c Curie<'c>) -> String {
         match c.prefix {
-            Some(prefix) =>
-                format!("{}:{}", prefix, c.reference),
-            None =>
-                format!("{}", c.reference),
+            Some(prefix) => format!("{}:{}", prefix, c.reference),
+            None => format!("{}", c.reference),
         }
     }
 }
 
 impl<'c> From<Curie<'c>> for String {
-    fn from (c:Curie<'c>) -> String {
+    fn from(c: Curie<'c>) -> String {
         String::from(&c)
     }
 }
