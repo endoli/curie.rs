@@ -265,13 +265,13 @@ impl PrefixMapping {
     pub fn shrink_iri<'a>(&'a self, iri: &'a str) -> Result<Curie<'a>, &'static str> {
         if let Some(ref def) = self.default {
             if iri.starts_with(def) {
-                return Ok(Curie::new(None, iri.trim_left_matches(def)));
+                return Ok(Curie::new(None, iri.trim_start_matches(def)));
             }
         }
 
         for mp in &self.mapping {
             if iri.starts_with(mp.1) {
-                return Ok(Curie::new(Some(mp.0), iri.trim_left_matches(mp.1)));
+                return Ok(Curie::new(Some(mp.0), iri.trim_start_matches(mp.1)));
             }
         }
 
