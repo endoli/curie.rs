@@ -163,7 +163,7 @@ pub enum ExpansionError {
 /// // Create using the `Default` trait:
 /// let mut mapping = PrefixMapping::default();
 /// ```
-#[derive(Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct PrefixMapping {
     default: Option<String>,
     mapping: HashMap<String, String>,
@@ -524,4 +524,23 @@ mod tests {
         );
     }
 
+    #[test]
+    fn prefix_mapping_equality() {
+        let mut m1 = PrefixMapping::default();
+        let mut m2 = PrefixMapping::default();
+
+        assert_eq!(m1, m2);
+
+        m1.set_default(FOAF_VOCAB);
+        assert_ne!(m1, m2);
+
+        m2.set_default(FOAF_VOCAB);
+        assert_eq!(m1, m2);
+
+        m1.add_prefix("foaf", FOAF_VOCAB).unwrap();
+        assert_ne!(m1, m2);
+
+        m2.add_prefix("foaf", FOAF_VOCAB).unwrap();
+        assert_eq!(m1, m2);
+    }
 }
