@@ -296,7 +296,7 @@ impl PrefixMapping {
     /// Return an iterator over the prefix mappings.
     ///
     /// The iterator yields IRI mappings in the same order they were inserted.
-    /// This is useful when testing code that uses this crate. 
+    /// This is useful when testing code that uses this crate.
     pub fn mappings(&self) -> indexmap::map::Iter<String, String> {
         self.mapping.iter()
     }
