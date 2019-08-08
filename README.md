@@ -25,7 +25,7 @@ Add it to your `Cargo.toml` like so:
 
 ```toml
 [dependencies]
-curie = "0.1.0"
+curie = "0.1.1"
 ```
 
 ## Contribution
