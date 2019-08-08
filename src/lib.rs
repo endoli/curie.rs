@@ -513,6 +513,35 @@ mod tests {
     }
 
     #[test]
+    fn shrink_iri_precedence() {
+        let mut mapping = PrefixMapping::default();
+        mapping.add_prefix("a", "http://example.com/").unwrap();
+        mapping.add_prefix("b", "http://example.com/other/").unwrap();
+
+        assert_eq!(
+            mapping.shrink_iri("http://example.com/thing"),
+            Ok(Curie::new(Some("a"), "thing")),
+        );
+        assert_eq!(
+            mapping.shrink_iri("http://example.com/other/thing"),
+            Ok(Curie::new(Some("a"), "other/thing")),
+        );
+
+        let mut mapping2 = PrefixMapping::default();
+        mapping2.add_prefix("b", "http://example.com/other/").unwrap();
+        mapping2.add_prefix("a", "http://example.com/").unwrap();
+
+        assert_eq!(
+            mapping2.shrink_iri("http://example.com/thing"),
+            Ok(Curie::new(Some("a"), "thing")),
+        );
+        assert_eq!(
+            mapping2.shrink_iri("http://example.com/other/thing"),
+            Ok(Curie::new(Some("b"), "thing")),
+        );
+    }
+
+    #[test]
     fn split_iri_default() {
         let mut mapping = PrefixMapping::default();
         mapping.set_default(FOAF_VOCAB);
