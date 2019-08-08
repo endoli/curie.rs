@@ -260,7 +260,21 @@ impl PrefixMapping {
         }
     }
 
-    /// Shrink an IRI returning a [`Curie`]
+    /// Shrink an IRI, returning a [`Curie`].
+    ///
+    /// If several base IRIs match the expanded IRI passed as argument, the
+    /// one that was inserted first is used, even though another base IRI is
+    /// a better match:
+    /// ```rust
+    /// use curie::{PrefixMapping, Curie};
+    ///
+    /// let mut mapping = PrefixMapping::default();
+    /// mapping.add_prefix("eg", "http://example.com/").unwrap();
+    /// mapping.add_prefix("egdoc", "http://example.com/document/").unwrap();
+    ///
+    /// assert_eq!(mapping.shrink_iri("http://example.com/document/thing"),
+    ///            Ok(Curie::new(Some("eg"), "document/thing")));
+    /// ```
     ///
     /// [`Curie`]: struct.Curie.html
     pub fn shrink_iri<'a>(&'a self, iri: &'a str) -> Result<Curie<'a>, &'static str> {
@@ -281,7 +295,8 @@ impl PrefixMapping {
 
     /// Return an iterator over the prefix mappings.
     ///
-    /// This is useful when testing code that uses this crate.
+    /// The iterator yields IRI mappings in the same order they were inserted.
+    /// This is useful when testing code that uses this crate. 
     pub fn mappings(&self) -> indexmap::map::Iter<String, String> {
         self.mapping.iter()
     }
