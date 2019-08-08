@@ -28,11 +28,6 @@ Add it to your `Cargo.toml` like so:
 curie = "0.1.0"
 ```
 
-## Status of Implementation
-
-Things are under active development. This project is not quite
-usable yet as some of the basic functionality is being written.
-
 ## Contribution
 
 Unless you explicitly state otherwise, any contribution
