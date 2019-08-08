@@ -128,7 +128,8 @@
     unused_qualifications
 )]
 
-use std::collections::HashMap;
+extern crate indexmap;
+
 use std::fmt;
 
 /// Errors that might occur when adding a prefix to a [`PrefixMapping`].
@@ -166,7 +167,7 @@ pub enum ExpansionError {
 #[derive(Debug, Default, PartialEq)]
 pub struct PrefixMapping {
     default: Option<String>,
-    mapping: HashMap<String, String>,
+    mapping: indexmap::IndexMap<String, String>,
 }
 
 impl PrefixMapping {
@@ -281,7 +282,7 @@ impl PrefixMapping {
     /// Return an iterator over the prefix mappings.
     ///
     /// This is useful when testing code that uses this crate.
-    pub fn mappings(&self) -> ::std::collections::hash_map::Iter<String, String> {
+    pub fn mappings(&self) -> indexmap::map::Iter<String, String> {
         self.mapping.iter()
     }
 }

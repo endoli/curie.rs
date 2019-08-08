@@ -11,3 +11,4 @@ homepage = "https://github.com/endoli/curie.rs"
 repository = "https://github.com/endoli/curie.rs"
 
 [dependencies]
+indexmap = "1"
