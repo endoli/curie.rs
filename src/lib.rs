@@ -529,7 +529,9 @@ mod tests {
     fn shrink_iri_precedence() {
         let mut mapping = PrefixMapping::default();
         mapping.add_prefix("a", "http://example.com/").unwrap();
-        mapping.add_prefix("b", "http://example.com/other/").unwrap();
+        mapping
+            .add_prefix("b", "http://example.com/other/")
+            .unwrap();
 
         assert_eq!(
             mapping.shrink_iri("http://example.com/thing"),
@@ -541,7 +543,9 @@ mod tests {
         );
 
         let mut mapping2 = PrefixMapping::default();
-        mapping2.add_prefix("b", "http://example.com/other/").unwrap();
+        mapping2
+            .add_prefix("b", "http://example.com/other/")
+            .unwrap();
         mapping2.add_prefix("a", "http://example.com/").unwrap();
 
         assert_eq!(
