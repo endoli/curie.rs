@@ -9,6 +9,7 @@ keywords = ["curie", "qname", "prefix", "uri"]
 documentation = "https://docs.rs/curie/"
 homepage = "https://github.com/endoli/curie.rs"
 repository = "https://github.com/endoli/curie.rs"
+edition = "2021"
 
 [dependencies]
 indexmap = "2"

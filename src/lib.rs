@@ -128,8 +128,6 @@
     unused_qualifications
 )]
 
-extern crate indexmap;
-
 use std::fmt;
 
 /// Errors that might occur when adding a prefix to a [`PrefixMapping`].
