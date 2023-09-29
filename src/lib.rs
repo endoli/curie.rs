@@ -385,7 +385,7 @@ impl<'c> fmt::Display for Curie<'c> {
 mod tests {
     use super::*;
 
-    const FOAF_VOCAB: &'static str = "http://xmlns.com/foaf/0.1/";
+    const FOAF_VOCAB: &str = "http://xmlns.com/foaf/0.1/";
 
     #[test]
     fn add_remove_works() {
