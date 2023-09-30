@@ -15,8 +15,7 @@ Dual licensed under the MIT and Apache 2 licenses.
 
 ## Documentation
 
-The API is fully documented with examples:
-[https://endoli.github.io/curie.rs/](https://endoli.github.io/curie.rs/)
+The API is fully documented with examples: <https://docs.rs/curie/>
 
 ## Installation
 
