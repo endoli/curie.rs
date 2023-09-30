@@ -2,7 +2,7 @@
 name = "curie"
 version = "0.1.1"
 authors = ["Bruce Mitchener <bruce.mitchener@gmail.com>"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "CURIE or Compact URIs as used in JSON-LD, RDF, SPARQL, XML and other applications. This manages mapping prefixes to URIs or IRIs as well as expanding CURIEs to the complete URI form."
 keywords = ["curie", "qname", "prefix", "uri"]
