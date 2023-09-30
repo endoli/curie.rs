@@ -1,7 +1,8 @@
 # curie
 
-[![Build Status](https://travis-ci.org/endoli/curie.rs.svg?branch=master)](https://travis-ci.org/endoli/curie.rs)
-[![](http://meritbadge.herokuapp.com/curie)](https://crates.io/crates/curie)
+[![CI](https://github.com/endoli/curie.rs/actions/workflows/ci.yml/badge.svg)](https://github.com/endoli/curie.rs/actions/workflows/ci.yml)
+[![](https://img.shields.io/crates/v/curie.svg)](https://crates.io/crates/curie)
+[![docs.rs](https://img.shields.io/docsrs/curie)](https://docs.rs/curie)
 
 CURIEs, [defined by the W3C](https://www.w3.org/TR/curie/), are a compact
 way of representing a URI.  A CURIE consists of an optional prefix and a
