@@ -188,6 +188,10 @@ impl PrefixMapping {
     /// assert_eq!(mapping.expand_curie_string("Entity"),
     ///            Ok(String::from("http://example.com/Entity")));
     /// ```
+    ///
+    /// # See also
+    ///
+    /// * [`PrefixMapping::add_prefix()`]
     pub fn set_default(&mut self, default: &str) {
         self.default = Some(String::from(default));
     }
@@ -195,6 +199,16 @@ impl PrefixMapping {
     /// Add a prefix to the mapping.
     ///
     /// This allows this prefix to be resolved when a CURIE is expanded.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`InvalidPrefixError`] when the `prefix` is invalid. Typically, this is
+    /// when `prefix` is `_`, which is a reserved prefix.
+    ///
+    /// # See also
+    ///
+    /// * [`PrefixMapping::remove_prefix()`]
+    /// * [`PrefixMapping::set_default()`]
     pub fn add_prefix(&mut self, prefix: &str, value: &str) -> Result<(), InvalidPrefixError> {
         if prefix == "_" {
             Err(InvalidPrefixError::ReservedPrefix)
@@ -209,11 +223,23 @@ impl PrefixMapping {
     ///
     /// Future calls to [`PrefixMapping::expand_curie_string()`] or [`PrefixMapping::expand_curie()`]
     /// that use this `prefix` will result in a [`ExpansionError::Invalid`] error.
+    ///
+    /// # See also
+    ///
+    /// * [`PrefixMapping::add_prefix()`]
     pub fn remove_prefix(&mut self, prefix: &str) {
         self.mapping.remove(prefix);
     }
 
     /// Expand a CURIE, returning a complete IRI.
+    ///
+    /// # Errors
+    ///
+    /// This will return [`ExpansionError`] if the expansion fails.
+    ///
+    /// # See also
+    ///
+    /// * [`PrefixMapping::expand_curie()`]
     pub fn expand_curie_string(&self, curie_str: &str) -> Result<String, ExpansionError> {
         if let Some(separator_idx) = curie_str.chars().position(|c| c == ':') {
             // If we have a separator, try to expand.
@@ -228,6 +254,14 @@ impl PrefixMapping {
     }
 
     /// Expand a parsed [`Curie`], returning a complete IRI.
+    ///
+    /// # Errors
+    ///
+    /// This will return [`ExpansionError`] if the expansion fails.
+    ///
+    /// # See also
+    ///
+    /// * [`PrefixMapping::expand_curie_string()`]
     pub fn expand_curie(&self, curie: &Curie) -> Result<String, ExpansionError> {
         self.expand_exploded_curie(curie.prefix, curie.reference)
     }
@@ -255,6 +289,7 @@ impl PrefixMapping {
     /// If several base IRIs match the expanded IRI passed as argument, the
     /// one that was inserted first is used, even though another base IRI is
     /// a better match:
+    ///
     /// ```rust
     /// use curie::{PrefixMapping, Curie};
     ///
@@ -265,6 +300,11 @@ impl PrefixMapping {
     /// assert_eq!(mapping.shrink_iri("http://example.com/document/thing"),
     ///            Ok(Curie::new(Some("eg"), "document/thing")));
     /// ```
+    ///
+    /// # Errors
+    ///
+    /// An error is returned if there is no valid mapping (default or otherwise)
+    /// that would allow the IRI to be shortened.
     pub fn shrink_iri<'a>(&'a self, iri: &'a str) -> Result<Curie<'a>, &'static str> {
         if let Some(ref def) = self.default {
             if iri.starts_with(def) {
