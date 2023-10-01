@@ -285,6 +285,7 @@ impl PrefixMapping {
     ///
     /// The iterator yields IRI mappings in the same order they were inserted.
     /// This is useful when testing code that uses this crate.
+    #[must_use]
     pub fn mappings(&self) -> indexmap::map::Iter<String, String> {
         self.mapping.iter()
     }
@@ -343,6 +344,7 @@ pub struct Curie<'c> {
 
 impl<'c> Curie<'c> {
     /// Construct a `Curie` from a prefix and reference.
+    #[must_use]
     pub fn new(prefix: Option<&'c str>, reference: &'c str) -> Self {
         Curie { prefix, reference }
     }
