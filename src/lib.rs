@@ -352,13 +352,13 @@ impl<'c> Curie<'c> {
 
 impl<'c> From<&'c Curie<'c>> for String {
     fn from(c: &'c Curie<'c>) -> String {
-        format!("{}", c)
+        format!("{c}")
     }
 }
 
 impl<'c> From<Curie<'c>> for String {
     fn from(c: Curie<'c>) -> String {
-        format!("{}", c)
+        format!("{c}")
     }
 }
 
@@ -407,7 +407,7 @@ mod tests {
     #[test]
     fn display_curie() {
         let curie = Curie::new(Some("foaf"), "Agent");
-        assert_eq!("foaf:Agent", format!("{}", curie));
+        assert_eq!("foaf:Agent", format!("{curie}"));
     }
 
     #[test]
