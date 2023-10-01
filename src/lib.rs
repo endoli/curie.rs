@@ -117,7 +117,6 @@
 //!
 //! [defined by the W3C]: https://www.w3.org/TR/curie/
 //! [specification]: https://www.w3.org/TR/curie/
-//! [`Curie`]: struct.Curie.html
 
 #![warn(missing_docs)]
 #![deny(
@@ -131,8 +130,6 @@
 use std::fmt;
 
 /// Errors that might occur when adding a prefix to a [`PrefixMapping`].
-///
-/// [`PrefixMapping`]: struct.PrefixMapping.html
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum InvalidPrefixError {
     /// This is a reserved prefix.
@@ -210,11 +207,8 @@ impl PrefixMapping {
 
     /// Remove a prefix from the mapping.
     ///
-    /// Future calls to [`expand_curie_string`] or [`expand_curie`] that use
-    /// this `prefix` will result in a `ExpansionError::Invalid` error.
-    ///
-    /// [`expand_curie_string`]: struct.PrefixMapping.html#method.expand_curie_string
-    /// [`expand_curie`]: struct.PrefixMapping.html#method.expand_curie
+    /// Future calls to [`PrefixMapping::expand_curie_string()`] or [`PrefixMapping::expand_curie()`]
+    /// that use this `prefix` will result in a [`ExpansionError::Invalid`] error.
     pub fn remove_prefix(&mut self, prefix: &str) {
         self.mapping.remove(prefix);
     }
@@ -234,8 +228,6 @@ impl PrefixMapping {
     }
 
     /// Expand a parsed [`Curie`], returning a complete IRI.
-    ///
-    /// [`Curie`]: struct.Curie.html
     pub fn expand_curie(&self, curie: &Curie) -> Result<String, ExpansionError> {
         self.expand_exploded_curie(curie.prefix, curie.reference)
     }
@@ -273,8 +265,6 @@ impl PrefixMapping {
     /// assert_eq!(mapping.shrink_iri("http://example.com/document/thing"),
     ///            Ok(Curie::new(Some("eg"), "document/thing")));
     /// ```
-    ///
-    /// [`Curie`]: struct.Curie.html
     pub fn shrink_iri<'a>(&'a self, iri: &'a str) -> Result<Curie<'a>, &'static str> {
         if let Some(ref def) = self.default {
             if iri.starts_with(def) {
@@ -345,8 +335,6 @@ impl PrefixMapping {
 /// let curie = Curie::new(Some("foaf"), "Agent");
 /// assert_eq!("foaf:Agent", format!("{}", curie));
 /// ```
-///
-/// [`PrefixMapping`]: struct.PrefixMapping.html
 #[derive(Debug, Eq, PartialEq)]
 pub struct Curie<'c> {
     prefix: Option<&'c str>,
