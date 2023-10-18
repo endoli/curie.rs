@@ -118,7 +118,7 @@
 //! [defined by the W3C]: https://www.w3.org/TR/curie/
 //! [specification]: https://www.w3.org/TR/curie/
 
-#![warn(missing_docs)]
+#![warn(clippy::doc_markdown, missing_docs)]
 #![deny(
     trivial_numeric_casts,
     unsafe_code,
