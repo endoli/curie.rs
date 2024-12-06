@@ -228,7 +228,7 @@ impl PrefixMapping {
     ///
     /// * [`PrefixMapping::add_prefix()`]
     pub fn remove_prefix(&mut self, prefix: &str) {
-        self.mapping.remove(prefix);
+        self.mapping.shift_remove(prefix);
     }
 
     /// Expand a CURIE, returning a complete IRI.
