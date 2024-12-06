@@ -402,7 +402,7 @@ impl<'c> From<Curie<'c>> for String {
     }
 }
 
-impl<'c> fmt::Display for Curie<'c> {
+impl fmt::Display for Curie<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.prefix {
             Some(prefix) => write!(f, "{}:{}", prefix, self.reference),
