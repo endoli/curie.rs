@@ -159,7 +159,7 @@ pub enum ExpansionError {
 /// // Create using the `Default` trait:
 /// let mut mapping = PrefixMapping::default();
 /// ```
-#[derive(Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct PrefixMapping {
     default: Option<String>,
     mapping: indexmap::IndexMap<String, String>,
